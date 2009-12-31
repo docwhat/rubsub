@@ -1,6 +1,15 @@
 =RVM2=
 
-This is (currently) a prototype to see if we can run RVM entirely within ruby.
+This is (currently) a prototype to see if we can run RVM entirely
+within ruby.
+
+WARNING: Don't expect anything to work!
+
+==Quickstart==
+
+curl http://github.com/docwhat/rvm2/raw/master/rvm-install.sh | bash
+
+(yup, it's that simple)
 
 ==Known Issues==
   * We need a reliable ruby to work with. We don't want to rely on a system ruby.
