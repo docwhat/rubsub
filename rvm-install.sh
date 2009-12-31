@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eux
+set -eu
 # ftp://ftp.ruby-lang.org/pub/ruby/1.$rvm_major_version/$rvm_ruby_package_file.$rvm_archive_extension
 rvm_dir="${HOME}/.rvm2"
 ruby_ext=".tar.gz"
@@ -39,7 +39,7 @@ rvm_verify() {
 rvm_compile() {
     pushd tmp
 
-    rm -rf "${ruby_base}
+    rm -rf "${ruby_base}"
     gzip -dc ../${tarball} | tar xf -
 
     cd "${ruby_base}"
@@ -47,13 +47,20 @@ rvm_compile() {
     make miniruby
 
     # Install
-    cp -r miniruby lib "${rvm_dir}/miniruby"
+    cp -r miniruby lib bin/irb "${rvm_dir}/miniruby"
+    ln -s . "${rvm_dir}/miniruby/lib/ruby"
+    ln -s . "${rvm_dir}/miniruby/lib/site_ruby"
 
     # Cleanup
     cd ..
-    rm -rf "${ruby_base}
+    rm -rf "${ruby_base}"
 
     popd
+}
+
+rvm_install() {
+    echo "Fetching rvm..."
+    echo NOT DONE YET
 }
 
 # Setup the rvm2 directory.
@@ -80,6 +87,9 @@ rvm_verify
 
 # Compile mini-ruby
 rvm_compile
+
+# Fetch and install the latest rvm2 code.
+rvm_install
 
 echo "...done!"
 
