@@ -1,0 +1,27 @@
+=RVM2=
+
+This is (currently) a prototype to see if we can run RVM entirely within ruby.
+
+==Known Issues==
+  * We need a reliable ruby to work with. We don't want to rely on a system ruby.
+  * We need a way to allow each shell instance to (potentially) use a different ruby version. We don't want a 'system wide' switch of ruby versions.
+
+==Solutions==
+
+===A Reliable Ruby===
+
+We will download and compile miniruby.  This will give us a static, simple ruby
+with a lot of features.
+
+Implemented in rvm-install.sh
+
+===per-shell status===
+
+Use a "session-key" to control the rvm configuration.
+
+I have two thoughts:
+  # Use $SHELL-$$ -- This is not guaranteed unique, especially given infinite time.
+  # Require that your shell run "eval rvm --start-session" which creates an environment
+    with a read-only session id.
+
+Ciao!
