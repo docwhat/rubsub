@@ -12,32 +12,48 @@ tarball="cache/${ruby_base}${ruby_ext}"
 rvm_fetch() {
     echo "Fetching ${ruby_url}..."
     pushd cache
+
     set +e
     curl -O -L -C - "${ruby_url}"
     # Extra checking could be done here with $?
+    # See rvm_verify() for an example.
     set -e
+
     popd
 }
 
 rvm_verify() {
     echo "Checking the md5sum..."
+
     set +e
     echo "${ruby_md5}  ${tarball}" | md5sum --check --quiet
     result=$?
+    set -e
+
     if [[ ${result} -ne 0 ]]; then
         echo "Failed download: md5sum doesn't match."
         exit 1
     fi
-    set -e
 }
 
 rvm_compile() {
     pushd tmp
+
+    rm -rf "${ruby_base}
     gzip -dc ../${tarball} | tar xf -
-    cd ${ruby_base}
+
+    cd "${ruby_base}"
     ./configure --prefix="${rvm_dir}/miniruby"
     make miniruby
+
+    # Install
     cp -r miniruby lib "${rvm_dir}/miniruby"
+
+    # Cleanup
+    cd ..
+    rm -rf "${ruby_base}
+
+    popd
 }
 
 # Setup the rvm2 directory.
@@ -53,7 +69,6 @@ if [[ -d miniruby ]]; then
     rm -rf miniruby
 fi
 mkdir miniruby
-
 
 # Fetch it if we don't have it.
 if [[ ! -r "${tarball}" ]]; then
