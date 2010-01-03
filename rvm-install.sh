@@ -16,8 +16,8 @@ rvm_fetch() {
     cd archive
 
     set +e
-    curl -O -L -C - "${ruby_url}" \
-        > "${log_dir}/curl.log" 2>&1
+    curl -q -O -L -C - "${ruby_url}" \
+        > "${log_dir}/fetch.log" 2>&1
     # Extra checking could be done here with $?
     # See rvm_verify() for an example.
     set -e
@@ -93,15 +93,24 @@ rvm_install_rvm() {
     else
         echo "Fetching latest rvm2..."
         # This is the real install proceedure.
-        rvm_src=
-        echo NOT DONE YET
+        rm -f "${rvm_dir}/archive/rvm-latest.tgz"
+        curl -L -o "${rvm_dir}/archive/rvm-latest.tgz" \
+            http://github.com/docwhat/rvm2/tarball/stable
+            > "${log_dir}/fetch.log" 2>&1
+
+        cd src
+        rvm_src="$(tar tf ${rvm_dir}/archive/rvm-latest.tgz | head -n1)"
+        tar xf "${rvm_dir}/archive/rvm-latest.tgz"
+
+        # Reset directory
+        cd "${rvm_dir}"
     fi
 
     # Install the contents of bin.
+    rm -rf bin
+    mkdir bin
     for template in src/"${rvm_src}"/template/*; do
         bin="bin/$(basename ${template} .rb)"
-
-        rm -f "${bin}"
 
         echo '#!'"${rvm_dir}/miniruby/miniruby"    >> "${bin}"
         cat "${template}"                          >> "${bin}"
@@ -109,8 +118,6 @@ rvm_install_rvm() {
         chmod a+x "${bin}"
     done
 
-    # Reset directory
-    cd "${rvm_dir}"
 }
 
 # Setup the rvm2 directory.
@@ -120,12 +127,6 @@ cd "${HOME}/.rvm2"
 # These directories can be re-used.
 for dir in archive src log; do
     [[ -d ${dir} ]] || mkdir ${dir}
-done
-
-# These directories must be removed every-time.
-for dir in bin; do
-    rm -rf ${dir}
-    mkdir ${dir}
 done
 
 # Fetch it if we don't have it.
