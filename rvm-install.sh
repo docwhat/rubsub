@@ -2,24 +2,28 @@
 
 set -eu
 # ftp://ftp.ruby-lang.org/pub/ruby/1.$rvm_major_version/$rvm_ruby_package_file.$rvm_archive_extension
+start_dir="$(pwd -P)"
 rvm_dir="${HOME}/.rvm2"
 ruby_ext=".tar.gz"
 ruby_url="http://ftp.ruby-lang.org/pub/ruby/1.8/ruby-1.8.7-p248${ruby_ext}"
 ruby_md5="60a65374689ac8b90be54ca9c61c48e3"
 ruby_base="$(basename ${ruby_url} ${ruby_ext})"
-tarball="cache/${ruby_base}${ruby_ext}"
+log_dir="${rvm_dir}/log"
+tarball="archive/${ruby_base}${ruby_ext}"
 
 rvm_fetch() {
     echo "Fetching ${ruby_url}..."
-    pushd cache
+    cd archive
 
     set +e
-    curl -O -L -C - "${ruby_url}"
+    curl -O -L -C - "${ruby_url}" \
+        > "${log_dir}/curl.log" 2>&1
     # Extra checking could be done here with $?
     # See rvm_verify() for an example.
     set -e
 
-    popd
+    # Reset directory
+    cd "${rvm_dir}"
 }
 
 rvm_verify() {
@@ -36,31 +40,77 @@ rvm_verify() {
     fi
 }
 
-rvm_compile() {
-    pushd tmp
+rvm_install_miniruby() {
+    if [ -r "${rvm_dir}/miniruby/.version" ]; then
+        miniruby_version="$(cat ${rvm_dir}/miniruby/.version)"
+    fi
+    if [ "${miniruby_version:-}" != "${ruby_md5}" ]; then
+        echo "Compiling a new version of miniruby..."
+        # Purge the oldversion
+        rm -rf miniruby
+        mkdir miniruby
 
-    rm -rf "${ruby_base}"
-    gzip -dc ../${tarball} | tar xf -
+        cd src
 
-    cd "${ruby_base}"
-    ./configure --prefix="${rvm_dir}/miniruby"
-    make miniruby
+        rm -rf "${ruby_base}"
+        gzip -dc ../${tarball} | tar xf -
 
-    # Install
-    cp -r miniruby lib bin/irb "${rvm_dir}/miniruby"
-    ln -s . "${rvm_dir}/miniruby/lib/ruby"
-    ln -s . "${rvm_dir}/miniruby/lib/site_ruby"
+        # Compile rvm
+        cd "${ruby_base}"
+        ./configure --prefix="${rvm_dir}/miniruby" \
+            > "${log_dir}/miniruby-configure.log" 2>&1
+        make miniruby .rbconfig.time \
+            > "${log_dir}/miniruby-make.log" 2>&1
 
-    # Cleanup
-    cd ..
-    rm -rf "${ruby_base}"
+        # Install
+        cp -r miniruby lib bin/irb "${rvm_dir}/miniruby"
+        cp rbconfig.rb "${rvm_dir}/miniruby/lib"
+        ln -s . "${rvm_dir}/miniruby/lib/ruby"
+        ln -s . "${rvm_dir}/miniruby/lib/site_ruby"
 
-    popd
+        # Cleanup
+        make clean \
+            > "${log_dir}/miniruby-clean.log" 2>&1
+
+        # Write a version
+        echo "${ruby_md5}" > "${rvm_dir}/miniruby/.version"
+
+    else
+        echo "Reusing the previous version of miniruby..."
+    fi
+
+    # Reset directory
+    cd "${rvm_dir}"
 }
 
-rvm_install() {
-    echo "Fetching rvm..."
-    echo NOT DONE YET
+rvm_install_rvm() {
+    if [ "${LOCAL_INSTALL:-no}" = "yes" ]; then
+        echo "Getting your local rvm2..."
+        # This is an install for testing and debugging.
+        rvm_src="rvm-local"
+        rsync -ravC --delete --delete-excluded "${start_dir}/" "${rvm_dir}/src/${rvm_src}/" \
+            > "${log_dir}/rsync.log" 2>&1
+    else
+        echo "Fetching latest rvm2..."
+        # This is the real install proceedure.
+        rvm_src=
+        echo NOT DONE YET
+    fi
+
+    # Install the contents of bin.
+    for template in src/"${rvm_src}"/template/*; do
+        bin="bin/$(basename ${template} .rb)"
+
+        rm -f "${bin}"
+
+        echo '#!'"${rvm_dir}/miniruby/miniruby"    >> "${bin}"
+        cat "${template}"                          >> "${bin}"
+
+        chmod a+x "${bin}"
+    done
+
+    # Reset directory
+    cd "${rvm_dir}"
 }
 
 # Setup the rvm2 directory.
@@ -68,14 +118,15 @@ rvm_install() {
 cd "${HOME}/.rvm2"
 
 # These directories can be re-used.
-[[ -d cache ]] || mkdir cache
-[[ -d tmp ]] || mkdir tmp
+for dir in archive src log; do
+    [[ -d ${dir} ]] || mkdir ${dir}
+done
 
-# This directory must be removed every-time.
-if [[ -d miniruby ]]; then
-    rm -rf miniruby
-fi
-mkdir miniruby
+# These directories must be removed every-time.
+for dir in bin; do
+    rm -rf ${dir}
+    mkdir ${dir}
+done
 
 # Fetch it if we don't have it.
 if [[ ! -r "${tarball}" ]]; then
@@ -85,11 +136,11 @@ fi
 # Verify that the tarball downloaded correctly.
 rvm_verify
 
-# Compile mini-ruby
-rvm_compile
+# Compile and install mini-ruby
+rvm_install_miniruby
 
 # Fetch and install the latest rvm2 code.
-rvm_install
+rvm_install_rvm
 
 echo "...done!"
 

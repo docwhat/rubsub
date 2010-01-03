@@ -13,7 +13,11 @@ curl http://github.com/docwhat/rvm2/raw/master/rvm-install.sh | bash
 
 ==Known Issues==
   * We need a reliable ruby to work with. We don't want to rely on a system ruby.
-  * We need a way to allow each shell instance to (potentially) use a different ruby version. We don't want a 'system wide' switch of ruby versions.
+  * We need a way to allow each shell instance to (potentially) use a
+    different ruby version. We don't want a 'system wide' switch of
+    ruby versions.
+  * Downloading the rvm2 code.  While this could be done via github's
+    Download feature, I'd prefer to be able to pull down the latest/greatest.
 
 ==Solutions==
 
@@ -33,4 +37,8 @@ I have two thoughts:
   # Require that your shell run "eval rvm --start-session" which creates an environment
     with a read-only session id.
 
-Ciao!
+===Getting the code===
+
+Currently, all that is implemented a local install version.  It works
+only via the environment variable "LOCAL_INSTALL=yes".
+

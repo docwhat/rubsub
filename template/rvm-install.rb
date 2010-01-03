@@ -1,4 +1,6 @@
-# setup.rb -- Setup the rvm environment.
+# rvm-install.rb -- Setup the rvm environment.
+
+RVM_DIR=File.expand_path "~/.rvm2"
 
 require 'optparse'
 
@@ -30,9 +32,11 @@ end
 # the options. What's left is the list of files to resize.
 optparse.parse!
 
+def verb msg
+  puts "VERBOSE: #{msg}"
+end
 
-require 'pp'
-pp "Options:", options
-pp "ARGV:", ARGV
+verb "Creating bin directory..."
+Dir.mkdir File.join(RVM_DIR, "bin")
 
-puts 'nothing here yet.'
+# EOF
