@@ -7,7 +7,7 @@ WARNING: Don't expect anything to work!
 
 ==Quickstart==
 
-curl http://github.com/docwhat/rvm2/raw/master/rvm-install.sh | bash
+curl http://github.com/docwhat/rvm2/raw/stable/rvm-install.sh | bash
 
 (yup, it's that simple)
 

@@ -16,7 +16,7 @@ rvm_fetch() {
     cd archive
 
     set +e
-    curl -q -O -L -C - "${ruby_url}" \
+    curl -D/dev/null -O -L -C - "${ruby_url}" \
         > "${log_dir}/fetch.log" 2>&1
     # Extra checking could be done here with $?
     # See rvm_verify() for an example.
@@ -94,7 +94,7 @@ rvm_install_rvm() {
         echo "Fetching latest rvm2..."
         # This is the real install proceedure.
         rm -f "${rvm_dir}/archive/rvm-latest.tgz"
-        curl -L -o "${rvm_dir}/archive/rvm-latest.tgz" \
+        curl  -D/dev/null -L -o "${rvm_dir}/archive/rvm-latest.tgz" \
             http://github.com/docwhat/rvm2/tarball/stable
             > "${log_dir}/fetch.log" 2>&1
 
@@ -118,6 +118,8 @@ rvm_install_rvm() {
         chmod a+x "${bin}"
     done
 
+    # Install our libs.
+    cp -r src/"${rvm_src}"/vendor_ruby miniruby/lib
 }
 
 # Setup the rvm2 directory.
