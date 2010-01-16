@@ -1,7 +1,6 @@
 # rvm2.rb -- A tool to manage your RVM environment.
 
 require 'rvm'
-require 'rvm_commands'
 require 'optparse'
 
 # This hash will hold all of the options
