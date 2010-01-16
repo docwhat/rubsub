@@ -1,7 +1,7 @@
 $: << 'vendor_ruby'
 
 require 'rvm'
-CONFFILE = 'test-#{Process::pid}-config.yml'
+CONFFILE = 'test-#{Process::pid}.store'
 
 class Test < ConfigStore
   @@defaults = {
@@ -39,16 +39,16 @@ describe ConfigStore do
   end
 
   it "should store and restore values" do
-    @conf.one   = 31
+    @conf.one   = 3.1
     @conf.two   = 32
-    @conf.three = 33
+    @conf.three = "string"
     @conf.save
 
     # Load a new object
     conf2 = Test.new
 
-    conf2.one.should   == 31
+    conf2.one.should   == 3.1
     conf2.two.should   == 32
-    conf2.three.should == 33
+    conf2.three.should == "string"
   end
 end

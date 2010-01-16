@@ -1,5 +1,4 @@
 require 'rvm/constants'
-require 'yaml'
 
 module RVM
 

@@ -1,4 +1,4 @@
-require 'yaml'
+# This doesn't use yml because yml doesn't work in miniruby.
 
 module RVM
 
@@ -16,16 +16,28 @@ module RVM
     end
 
     def initialize
+      @config = {}
       if File.exists? filename
-        @config = YAML.load_file(filename)
-      else
-        @config = {}
+        File.open(filename, "r:utf-8") do |f|
+          f.each_line do |line|
+            if line.match /^[a-z][^#:]*:/
+              k,v = line.strip.split /:\s*/, 2
+              k = k.strip.to_sym
+              v = v.strip
+              v = v.to_i if v == v.to_i.to_s
+              v = v.to_f if v == v.to_f.to_s
+              @config[k] = v
+            end
+          end
+        end
       end
     end
 
     def save
       File.open(filename, "w+:utf-8") do |f|
-        YAML.dump(@config, f)
+        @@defaults.each do |k,v|
+          f.write("#{k}: #{method_missing(k)}\n")
+        end
       end
     end
 
