@@ -11,6 +11,14 @@ ruby_base="$(basename ${ruby_url} ${ruby_ext})"
 log_dir="${rvm_dir}/log"
 tarball="archive/${ruby_base}${ruby_ext}"
 
+# Is this to be installed from a local copy?
+if [ "$(basename $0)" = 'rvm-install.sh' ]; then
+    basedir="$(dirname $0)"
+    if [ -r "${basedir}/README" -a "$(head -n1 ${basedir}/README)" = '=RVM2=' ]; then
+        LOCAL_INSTALL=yes
+    fi
+fi
+
 rvm_fetch() {
     echo "Fetching ${ruby_url}..."
     cd archive
