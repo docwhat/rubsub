@@ -1,9 +1,25 @@
+require 'rvm/constants'
+require 'rvm/config_store'
+
 module RVM
-=begin
-A class to manage and normalize the ruby package versions.
-=end
+
+  class LatestVersions < ConfigStore
+    @@defaults = {
+      :"ruby-1.8" => nil,
+      :"ruby-1.9" => nil
+    }.freeze
+
+    def filename
+      File.join RVM_DIR, 'config.yml'
+    end
+  end
+
+  # RubyVersion -- A class to manage and normalize the ruby package versions.
   class RubyVersion
     attr_reader :version, :major, :minor, :patch, :interpreter
+
+    latests = LatestVersions.new
+
     def initialize string
       @patch = nil
       # ruby-1.8.7-p123

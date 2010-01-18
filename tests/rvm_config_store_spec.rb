@@ -4,14 +4,17 @@ require 'rvm'
 CONFFILE = 'test-#{Process::pid}.store'
 
 class Test < ConfigStore
-  @@defaults = {
+  @defaults = {
     :one   => 1,
     :two   => 2,
-    :three => 3
+    :three => 3,
+    :null  => 'null'
   }.freeze
-  def filename
-    CONFFILE
-  end
+  @filename = CONFFILE
+end
+
+class TestAny < ConfigStore
+  @filename = CONFFILE
 end
 
 describe ConfigStore do
@@ -42,6 +45,7 @@ describe ConfigStore do
     @conf.one   = 3.1
     @conf.two   = 32
     @conf.three = "string"
+    @conf.null  = nil
     @conf.save
 
     # Load a new object
@@ -50,5 +54,38 @@ describe ConfigStore do
     conf2.one.should   == 3.1
     conf2.two.should   == 32
     conf2.three.should == "string"
+    conf2.null.should be_nil
+  end
+end
+
+describe ConfigStore do
+  before(:each) do
+    File.open(CONFFILE, 'w:utf-8') do |f|
+      f.write("one: 1\n")
+      f.write("two: 2\n")
+    end
+    @conf = TestAny.new
+  end
+
+  after(:each) do
+    File.unlink CONFFILE if File.exists? CONFFILE
+  end
+
+  it "should have loaded the correct values" do
+    @conf.one.should   == 1
+    @conf.two.should   == 2
+  end
+
+  it "should save and restore arbitrary values" do
+    @conf.null = nil
+    @conf.float = 1.1
+    @conf.int = 42
+
+    @conf.save
+    conf2 = TestAny.new
+
+    conf2.null.should be_nil
+    conf2.float.should == 1.1
+    conf2.int.should == 42
   end
 end

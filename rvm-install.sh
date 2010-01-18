@@ -135,7 +135,7 @@ rvm_install_rvm() {
 cd "${HOME}/.rvm2"
 
 # These directories can be re-used.
-for dir in archive src log; do
+for dir in archive src log config; do
     [[ -d ${dir} ]] || mkdir ${dir}
 done
 

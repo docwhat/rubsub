@@ -10,11 +10,15 @@ module RVM
   end
 
   def install_ruby version
-    filename = fetch_ruby version
+    #TODO filename = fetch_ruby version
     raise 'Not Implemented'
   end
 
   def remove_ruby version
+    raise 'Not Implemented'
+  end
+
+  def fetch_ruby version
     raise 'Not Implemented'
   end
 
