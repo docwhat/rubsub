@@ -2,7 +2,6 @@ require 'rvm/constants'
 require 'rvm/config_store'
 
 module RVM
-
   class LatestVersions < ConfigStore
     @@defaults = {
       :"ruby-1.8" => nil,
@@ -21,6 +20,11 @@ module RVM
     latests = LatestVersions.new
 
     def initialize string
+      if string == 'default'
+        # NARF hack
+        string = 'ruby-1.8.7-p174'
+      end
+
       @patch = nil
       # ruby-1.8.7-p123
       dashparts = string.split('-')

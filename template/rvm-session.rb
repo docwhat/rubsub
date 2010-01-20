@@ -5,8 +5,6 @@ require 'optparse'
 require 'fileutils'
 require 'pp'
 
-SESSION_CHARS = ("a".."z").to_a + ("A".."Z").to_a + ("0".."9").to_a
-
 # This hash will hold all of the options
 # parsed from the command-line by
 # OptionParser.
@@ -68,34 +66,34 @@ existing.each do |dir|
   end
 end
 
-# Calculate a new session id.
-session_id = nil
-while session_id.nil?
-  tmp = ''
-  1.upto(rand(16)) { |i| tmp << SESSION_CHARS[rand(SESSION_CHARS.size-1)] }
-  session_id = tmp unless existing.include? tmp
+session = RVM::Session.new :new
+
+# Modify the path.
+path_hash = {}
+old_path = ENV['PATH'].split ':'
+# Add in our paths.
+old_path.unshift session.bin_dir
+old_path.unshift RVM_BIN_DIR
+path = []
+old_path.each do |item|
+  if not path_hash.has_key? item
+    path << item
+    path_hash[item] = true
+  end
 end
-
-# Handy variables.
-session_dir     = File.join RVM_SESSION_DIR, session_id
-session_bin_dir = File.join session_dir, 'bin'
-
-# Create the session directory.
-Dir.mkdir session_dir
-Dir.mkdir session_bin_dir
 
 # Display the shell commands.
 if options[:shell] == :csh
   puts <<EOF
-setenv RVM2_SESSION #{session_id};
-setenv PATH "#{RVM_BIN_DIR}:#{session_bin_dir}:${PATH}"
+setenv #{RVM::SESSION_VARIABLE} #{session.sid};
+setenv PATH '#{path.join ':'}'
 EOF
 else
   puts <<EOF
-RVM2_SESSION=#{session_id}; export RVM2_SESSION;
-PATH="#{RVM_BIN_DIR}:#{session_bin_dir}:${PATH}"; export PATH;
+#{RVM::SESSION_VARIABLE}=#{session.sid}; export #{RVM::SESSION_VARIABLE};
+PATH='#{path.join ':'}'; export PATH;
 EOF
-  puts "echo $$ > #{File.join session_dir, 'shell.pid'};"
+  puts "echo $$ > #{File.join session.dir, 'shell.pid'};"
   puts "rvm2 default;"
 end
 

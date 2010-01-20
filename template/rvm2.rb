@@ -31,18 +31,21 @@ end
 # the options. What's left is the list of files to resize.
 optparse.parse!
 
+session = RVM::Session.new
+
 $VERBOSE = options[:verbose]
 
 if ARGV.length == 0
-  info :short
-end
-
-case ARGV[0]
-when 'default' then set_ruby :default
-when 'install' then install_ruby ARGV[1]
-when 'remove' then remove_ruby ARGV[1]
-when 'info' then info
-else set_ruby ARGV[1]
+  session.info_cmd :short
+else
+  case ARGV[0]
+  when 'install' then session.install_ruby_cmd ARGV[1]
+  when 'remove'  then session.remove_ruby_cmd ARGV[1]
+  when 'info'    then session.info_cmd
+  when 'default' then session.set_ruby_cmd 'default'
+  when 'system'  then session.set_ruby_cmd 'system'
+  else                session.set_ruby_cmd ARGV[1]
+  end
 end
 
 # EOF

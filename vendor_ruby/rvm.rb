@@ -3,8 +3,8 @@
 require 'rvm/string'
 require 'rvm/constants'
 require 'rvm/ruby_version'
-require 'rvm/commands'
 require 'rvm/config_store'
+require 'rvm/session'
 require 'rvm/config'
 
 # Install functions into root namespace
