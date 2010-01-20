@@ -5,8 +5,14 @@ set -eu
 start_dir="$(pwd -P)"
 rvm_dir="${HOME}/.rvm2"
 ruby_ext=".tar.gz"
-ruby_url="http://ftp.ruby-lang.org/pub/ruby/1.8/ruby-1.8.7-p248${ruby_ext}"
-ruby_md5="60a65374689ac8b90be54ca9c61c48e3"
+
+# Ruby 1.8.7
+#ruby_url="http://ftp.ruby-lang.org/pub/ruby/1.8/ruby-1.8.7-p248${ruby_ext}"
+#ruby_md5="60a65374689ac8b90be54ca9c61c48e3"
+
+ruby_url="http://ftp.ruby-lang.org/pub/ruby/1.9/ruby-1.9.1-p378${ruby_ext}"
+ruby_md5="9fc5941bda150ac0a33b299e1e53654c"
+
 ruby_base="$(basename ${ruby_url} ${ruby_ext})"
 log_dir="${rvm_dir}/log"
 tarball="archive/${ruby_base}${ruby_ext}"
@@ -48,15 +54,15 @@ rvm_verify() {
     fi
 }
 
-rvm_install_miniruby() {
-    if [ -r "${rvm_dir}/miniruby/.version" ]; then
-        miniruby_version="$(cat ${rvm_dir}/miniruby/.version)"
+rvm_install_myruby() {
+    if [ -r "${rvm_dir}/myruby/.version" ]; then
+        myruby_version="$(cat ${rvm_dir}/myruby/.version)"
     fi
-    if [ "${miniruby_version:-}" != "${ruby_md5}" ]; then
-        echo "Compiling a new version of miniruby..."
+    if [ "${myruby_version:-}" != "${ruby_md5}" ]; then
+        echo "Compiling a new version of internal ruby..."
         # Purge the oldversion
-        rm -rf miniruby
-        mkdir miniruby
+        rm -rf myruby
+        mkdir myruby
 
         cd src
 
@@ -65,26 +71,20 @@ rvm_install_miniruby() {
 
         # Compile rvm
         cd "${ruby_base}"
-        ./configure --prefix="${rvm_dir}/miniruby" \
-            > "${log_dir}/miniruby-configure.log" 2>&1
-        make miniruby .rbconfig.time \
-            > "${log_dir}/miniruby-make.log" 2>&1
-
-        # Install
-        cp -r miniruby lib bin/irb "${rvm_dir}/miniruby"
-        cp rbconfig.rb "${rvm_dir}/miniruby/lib"
-        ln -s . "${rvm_dir}/miniruby/lib/ruby"
-        ln -s . "${rvm_dir}/miniruby/lib/site_ruby"
-
-        # Cleanup
-        make clean \
-            > "${log_dir}/miniruby-clean.log" 2>&1
+        ./configure \
+            --prefix="${rvm_dir}/myruby" \
+            --disable-install-doc \
+            > "${log_dir}/myruby-configure.log" 2>&1
+        make all \
+            > "${log_dir}/myruby-make.log" 2>&1
+        make install \
+            > "${log_dir}/myruby-make.log" 2>&1
 
         # Write a version
-        echo "${ruby_md5}" > "${rvm_dir}/miniruby/.version"
+        echo "${ruby_md5}" > "${rvm_dir}/myruby/.version"
 
     else
-        echo "Reusing the previous version of miniruby..."
+        echo "Reusing the previous version of internal ruby..."
     fi
 
     # Reset directory
@@ -120,14 +120,15 @@ rvm_install_rvm() {
     for template in src/"${rvm_src}"/template/*; do
         bin="bin/$(basename ${template} .rb)"
 
-        echo '#!'"${rvm_dir}/miniruby/miniruby"    >> "${bin}"
+        echo '#!'"${rvm_dir}/myruby/bin/ruby"      >> "${bin}"
         cat "${template}"                          >> "${bin}"
 
         chmod a+x "${bin}"
     done
 
     # Install our libs.
-    cp -r src/"${rvm_src}"/vendor_ruby miniruby/lib
+    rm -rf myruby/lib/ruby/vendor_ruby
+    cp -r src/"${rvm_src}"/vendor_ruby myruby/lib/ruby/
 }
 
 # Setup the rvm2 directory.
@@ -148,7 +149,7 @@ fi
 rvm_verify
 
 # Compile and install mini-ruby
-rvm_install_miniruby
+rvm_install_myruby
 
 # Fetch and install the latest rvm2 code.
 rvm_install_rvm

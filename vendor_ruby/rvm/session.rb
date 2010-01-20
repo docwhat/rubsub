@@ -1,5 +1,6 @@
 require 'rvm/constants'
 require 'rvm/ruby_version'
+require 'net/http'
 
 module RVM
   class Session
@@ -40,11 +41,18 @@ module RVM
       File.join dir, 'bin'
     end
 
+    # fetch_versions -- Fetch the versions of ruby.
+    def fetch_versions
+      p Net:HTTP.get('http://ftp.ruby-lang.org/pub/ruby/')
+    end
+
     ###########################
     ######## Commands #########
 
     def info_cmd kind=nil
       puts 'current ruby version:'
+      fetch_versions
+      puts "NARF"
     end
 
     def set_ruby_cmd version
