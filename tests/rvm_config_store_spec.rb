@@ -1,6 +1,5 @@
-$: << 'vendor_ruby'
-
 require 'rvm'
+
 CONFFILE = 'test-#{Process::pid}.store'
 
 class Test < ConfigStore

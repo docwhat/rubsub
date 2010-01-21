@@ -131,7 +131,7 @@ rvm_install_rvm() {
 
     # Install our libs.
     rm -rf myruby/lib/ruby/vendor_ruby
-    cp -r src/"${rvm_src}"/vendor_ruby myruby/lib/ruby/
+    cp -r src/"${rvm_src}"/lib myruby/lib/ruby/vendor_ruby
 }
 
 # Setup the rvm2 directory.

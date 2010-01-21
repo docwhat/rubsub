@@ -1,5 +1,3 @@
-$: << 'vendor_ruby'
-
 require 'rvm'
 
 describe RVM do

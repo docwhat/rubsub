@@ -1,5 +1,3 @@
-$: << 'vendor_ruby'
-
 require 'rvm'
 
 # Alas, this requires 1.9.1 for Dir.mktmpdir - CGH
