@@ -17,13 +17,12 @@ describe RVM::RubyVersion do
 
   it "should pass a sunny day test" do
     (RubyVersion.new 'ruby-1.8.7-p123').to_s.should == 'ruby-1.8.7-p123'
-    (RubyVersion.new 'ruby-1.9.1-p1').to_s[0,10].should == 'ruby-1.9.1-p1'
+    (RubyVersion.new 'ruby-1.9.1-p1').to_s.should == 'ruby-1.9.1-p1'
   end
 
   it "should properly compare patch levels" do
     a = RubyVersion.new('ruby-1.8.7-p1')
     b = RubyVersion.new('ruby-1.8.7-p2')
-    puts "NARF #{a} #{b} #{a < b}"
     a.should be < b
     b.should be > a
   end

@@ -54,15 +54,16 @@ module RVM
 
       # Patch
       patch = parts[1]
-      if patch.starts_with? 'p'
-        @patch = patch.sub(/^p/, '').to_i
-      elsif not  patch.nil?
-        raise "Invalid patch #{string}"
+      if not patch.nil?
+        if patch.starts_with? 'p'
+          @patch = patch.sub(/^p/, '').to_i
+        else
+          raise "Invalid patch #{string}"
+        end
       end
-
     end # intialize
 
-    def guess
+    def guess!
       # If anything is still nill, then start guessing.
       if @major.nil? or @minor.nil? or @patch.nil?
         LATESTS.sort!
@@ -82,7 +83,6 @@ module RVM
       if not @patch.nil?
         parts << "p#{@patch}"
       end
-      puts "NARF.to_s #{parts}"
       parts.join('-')
     end
   end
