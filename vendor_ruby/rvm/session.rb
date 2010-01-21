@@ -41,25 +41,44 @@ module RVM
       File.join dir, 'bin'
     end
 
+    # fetch_page -- Fetches a single page and returns the text.
+    def fetch_page url
+      uri = URI.parse(url)
+
+      http = Net::HTTP.new(uri.host, uri.port)
+      response = http.request(Net::HTTP::Get.new(uri.request_uri))
+
+      response.body
+    end
+
     # fetch_versions -- Fetch the versions of ruby.
     def fetch_versions
-      p Net:HTTP.get('http://ftp.ruby-lang.org/pub/ruby/')
+      require 'pp'
+
+      response = fetch_page 'http://ftp.ruby-lang.org/pub/ruby/'
     end
 
     ###########################
     ######## Commands #########
 
     def info_cmd kind=nil
-      puts 'current ruby version:'
-      fetch_versions
-      puts "NARF"
+      # Set up the current link
+      if File.symlink? File.join(dir, 'current')
+        version = File.basename(File.readlink(File.join(dir, 'current')))
+      else
+        version = 'none'
+      end
+      puts "Current ruby version: #{version}"
     end
 
     def set_ruby_cmd version
-      v = RubyVersion.new version
-      ruby_dir = File.join(RVM::RVM_RUBIES_DIR, v.to_s)
-      if not File.exists? ruby_dir
-        fetch_ruby_cmd version
+      if version == 'internal'
+        v = 'the internal rvm ruby'
+        ruby_dir = File.join(RVM::RVM_DIR, 'myruby')
+      else
+        v = RubyVersion.new version
+        ruby_dir = File.join(RVM::RVM_RUBIES_DIR, v.to_s)
+        fetch_ruby_cmd version unless File.exists? ruby_dir
       end
 
       # Remove old symlinks
@@ -72,6 +91,13 @@ module RVM
         binary = File.join(ruby_dir, 'bin', f)
         File.symlink binary, File.join(bin_dir, f)
       end
+
+      # Set up the current link
+      path = File.join(dir, 'current')
+      File.unlink path if File.exists? path
+      File.symlink ruby_dir, path
+
+      puts "Using #{v}"
     end
 
     def install_ruby_cmd version

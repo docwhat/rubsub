@@ -55,6 +55,14 @@ describe RVM::RubyVersion do
     (RubyVersion.new 'ruby-3.8.7-p376').patch.should == 376
   end
 
+  it "should understand shortcuts for 1.9" do
+    r19 = RubyVersion.new '1.9'
+    r19.interpreter.should == 'ruby'
+    r19.major.should == 1
+    r19.minor.should == 1
+    r19.patch.should be_nil
+  end
+
 #  it "should be able to detect existing rubies" do
 #    fakedir {|dir|
 #      Dir.mkdir File.dir(RVM_RUBIES_DIR, 'ruby-1.8.7-p237')
