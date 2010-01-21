@@ -73,7 +73,6 @@ rvm_install_myruby() {
         cd "${ruby_base}"
         ./configure \
             --prefix="${rvm_dir}/myruby" \
-            --disable-install-doc \
             > "${log_dir}/myruby-configure.log" 2>&1
         make all \
             > "${log_dir}/myruby-make.log" 2>&1

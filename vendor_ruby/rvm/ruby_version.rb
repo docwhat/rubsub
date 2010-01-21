@@ -15,6 +15,8 @@ module RVM
 
   # RubyVersion -- A class to manage and normalize the ruby package versions.
   class RubyVersion
+    include Comparable
+
     attr_reader :version, :major, :minor, :patch, :interpreter
 
     latests = LatestVersions.new
@@ -25,33 +27,103 @@ module RVM
         string = 'ruby-1.8.7-p174'
       end
 
-      @patch = nil
-      # ruby-1.8.7-p123
-      dashparts = string.split('-')
-      if dashparts[0] =~ /^\d/
-        vmm = dashparts[0]
+      # Figure out the interpreter.
+      if string.match /^[0-9]/
         @interpreter = 'ruby'
-        @patch = dashparts[1].sub(/^p/, '').to_i unless dashparts[1].nil?
       else
-        vmm = dashparts[1]
-        @interpreter = dashparts[0]
-        case dashparts[0]
-        when 'ruby' then nil
-        when 'macruby' then raise "Not on this platform" unless RUBY_PLATFORM =~ /-darwin10/
-        when 'ironruby' then nil
-        else raise "Unknown ruby interpreter #{dashparts[0]}"
-        end
+        tmp = string.split('-',2)
+        @interpreter = tmp[0]
+        string = tmp[1]
       end
-      @version, @major, @minor = vmm.split('.').map {|x| x.to_i}
-      @patch = dashparts[2].sub(/^p/, '').to_i unless dashparts[2].nil?
+
+      parts = string.split('-')
+      if parts.length > 2
+        raise "Invalid version #{string}"
+      end
+
+      @version = @major = @minor = @patch = nil
+
+      # Version Major Minor
+      ver_maj_min = parts[0].split('.').map {|x| x.to_i}
+      case ver_maj_min.length
+      when 1 then @version = ver_maj_min[0]
+      when 2 then @version, @major = ver_maj_min
+      when 3 then @version, @major, @minor = ver_maj_min
+      else raise "Invalid version #{string}"
+      end
+
+      # Patch
+      patch = parts[1]
+      if patch.starts_with? 'p'
+        @patch = patch.sub(/^p/, '').to_i
+      elsif not  patch.nil?
+        raise "Invalid patch #{string}"
+      end
+
+    end # intialize
+
+    def guess
+      # If anything is still nill, then start guessing.
+      if @major.nil? or @minor.nil? or @patch.nil?
+        LATESTS.sort!
+      end
     end
 
     def to_s
-      if @patch.nil?
-        "#{@interpreter}-#{@version}.#{major}.#{minor}"
-      else
-        "#{@interpreter}-#{@version}.#{major}.#{minor}-p#{patch}"
+      parts = []
+      if not @interpreter.nil?
+        parts << @interpreter
       end
+      ver = []
+      ver << @version unless @version.nil?
+      ver << @major   unless @major.nil?
+      ver << @minor   unless @minor.nil?
+      parts << ver.join('.')
+      if not @patch.nil?
+        parts << "p#{@patch}"
+      end
+      puts "NARF.to_s #{parts}"
+      parts.join('-')
     end
   end
+
+  def <=>(other)
+    return 1 if other.nil?
+
+    def nilcmp a,b
+      return -1 if a.nil? and not b.nil?
+      return  1 if not a.nil? and b.nil?
+      return 0
+    end
+
+    c = nilcmp @interpreter, other.interpreter
+    return c if c != 0
+    c = @interpreter <=> other.interpreter
+    return c if c != 0
+
+    c = nilcmp @version, other.version
+    return c if c != 0
+    c = @version     <=> other.version
+    return c if c != 0
+
+    c = nilcmp @major, other.major
+    return c if c != 0
+    c = @major       <=> other.major
+    return c if c != 0
+
+    c = nilcmp @minor, other.minor
+    return c if c != 0
+    c = @minor       <=> other.minor
+    return c if c != 0
+
+    c = nilcmp @patch, other.patch
+    c = @patch       <=> other.patch
+    return c
+  end
+
+  LATESTS = [ RubyVersion.new('ruby-1.8.6-p383'),
+              RubyVersion.new('ruby-1.8.6-p388'),
+              RubyVersion.new('ruby-1.8.7-p249'),
+              RubyVersion.new('ruby-1.9.1-p378')
+            ]
 end
