@@ -4,6 +4,7 @@ require 'rvm/string'
 require 'rvm/constants'
 require 'rvm/ruby_version'
 require 'rvm/config_store'
+require 'rvm/utils'
 require 'rvm/session'
 require 'rvm/config'
 

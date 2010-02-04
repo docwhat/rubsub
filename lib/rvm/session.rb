@@ -1,6 +1,8 @@
 require 'rvm/constants'
+require 'rvm/utils'
 require 'rvm/ruby_version'
 require 'net/http'
+require 'fileutils'
 
 module RVM
   class Session
@@ -75,21 +77,11 @@ module RVM
       if version == 'internal'
         v = 'the internal rvm ruby'
         ruby_dir = File.join(RVM::RVM_DIR, 'myruby')
+        reset_cmd 'internal'
       else
         v = RubyVersion.new version
         ruby_dir = File.join(RVM::RVM_RUBIES_DIR, v.to_s)
-        fetch_ruby_cmd version unless File.exists? ruby_dir
-      end
-
-      # Remove old symlinks
-      Dir.entries(bin_dir).find_all {|i| not i.starts_with? '.'}.each do |f|
-        path = File.join(bin_dir, f)
-        File.unlink path if File.symlink? path
-      end
-
-      Dir.entries(File.join(ruby_dir, 'bin')).find_all {|i| not i.starts_with? '.'}.each do |f|
-        binary = File.join(ruby_dir, 'bin', f)
-        File.symlink binary, File.join(bin_dir, f)
+        reset_cmd v
       end
 
       # Set up the current link
@@ -100,24 +92,68 @@ module RVM
       puts "Using #{v}"
     end
 
+    def reset_cmd version=nil
+      if version.nil?
+        version = RubyVersion.new(File.basename(File.readlink(File.join(dir, 'current'))))
+        ruby_dir = File.join(RVM::RVM_RUBIES_DIR, version.to_s)
+      elsif version == 'internal'
+        ruby_dir = File.join(RVM::RVM_DIR, 'myruby')
+      elsif not version.is_a? RubyVersion
+        raise "Invalid version #{RubyVersion.inspect}"
+      end
+
+      # Remove old symlinks
+      Dir.entries(bin_dir).find_all {|i| not i.starts_with? '.'}.each do |f|
+        path = File.join(bin_dir, f)
+        File.unlink path if File.symlink? path
+      end
+
+      Dir.entries(File.join(ruby_dir, 'bin')).find_all {|i| not i.starts_with? '.'}.each do |fname|
+        if ['gem'].include? fname
+          # We need a special shell script instead.
+          File.open(File.join(bin_dir, fname), 'w') do |fh|
+            fh.write <<EOF
+#!/bin/sh
+
+#{File.join(ruby_dir, 'bin', fname)} "$@"
+
+#{File.join(RVM::RVM_BIN_DIR, 'rvm2')} reset
+
+EOF
+          end
+          File.chmod 0755, File.join(bin_dir, fname)
+        else
+          binary = File.join(ruby_dir, 'bin', fname)
+          File.symlink binary, File.join(bin_dir, fname)
+        end
+      end
+    end
+
     def install_ruby_cmd version
-      #TODO filename = fetch_ruby version
-      raise 'Not Implemented'
+      version = RubyVersion.new version
+      tarball = fetch_ruby_cmd version
+      unpack_dir = File.join(RVM::RVM_SRC_DIR, File.basename(tarball))
+
+      FileUtils.rm_rf unpack_dir if File.directory? unpack_dir
+
+      RVM::Utils::unpack tarball, RVM::RVM_SRC_DIR
+
+      RVM::Utils::compile unpack_dir
     end
 
     def remove_ruby_cmd version
       raise 'Not Implemented'
     end
 
-    def fetch_ruby_cmd version
-      raise 'Not Implemented'
-    end
-
     # fetch_ruby -- Fetch the requested version of ruby.
     def fetch_ruby_cmd version
-      interp, v, maj, min = split_version version
-      url = "http://ftp.ruby-lang.org/pub/ruby/1.$rvm_major_version/$rvm_ruby_package_file.$rvm_archive_extension"
-
+      version = RubyVersion.new version
+      tarball = File.join(RVM::RVM_ARCHIVE_DIR, "#{version}.tar.gz")
+      if not File.exists? tarball
+        #url = "http://ftp.ruby-lang.org/pub/ruby/1.$rvm_major_version/$rvm_ruby_package_file.$rvm_archive_extension"
+        raise 'Not Implemented'
+      end
+      return tarball
     end
 
   end # End class Session

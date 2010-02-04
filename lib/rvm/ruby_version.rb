@@ -22,6 +22,8 @@ module RVM
     latests = LatestVersions.new
 
     def initialize string
+      string = string.to_s
+
       if string == 'default'
         # NARF hack
         string = 'ruby-1.8.7-p174'

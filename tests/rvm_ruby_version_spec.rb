@@ -43,6 +43,10 @@ describe RVM::RubyVersion do
     (RubyVersion.new '1.9.1').to_s[0,10].should == 'ruby-1.9.1'
   end
 
+  it "should be able to take a RubyVersion as an argument to new." do
+    RubyVersion.new(RubyVersion.new('1.8.7'))
+  end
+
 #  it "should understand the interpreter ruby" do
 #    (RubyVersion.new '1.8.7').interpreter.should == 'ruby'
 #    (RubyVersion.new '1.9.1').interpreter.should == 'ruby'
