@@ -35,9 +35,8 @@ module RVM
       :cflags    => nil,
       :ldflags   => nil,
     }
-    uname = `uname`.chomp
     archflags = nil
-    if uname == "Darwin"
+    if RUBY_PLATFORM =~ /-darwin10/
       sysctl = {}
       `sysctl -a`.split(/\n/).each do |line|
         line.chomp!
