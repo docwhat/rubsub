@@ -74,19 +74,13 @@ module RVM
     end
 
     def set_ruby_cmd version
-      if version == 'internal'
-        v = 'the internal rvm ruby'
-        ruby_dir = File.join(RVM::RVM_DIR, 'myruby')
-        reset_cmd 'internal'
-      else
-        v = RubyVersion.new version
-        ruby_dir = File.join(RVM::RVM_RUBIES_DIR, v.to_s)
-        reset_cmd v
-      end
+      v = makeVersion version
+      ruby_dir = v.path
+      reset_cmd v
 
       # Set up the current link
       path = File.join(dir, 'current')
-      File.unlink path if File.exists? path
+      File.unlink path if File.exists? path or File.symlink? path
       File.symlink ruby_dir, path
 
       puts "Using #{v}"
@@ -94,32 +88,31 @@ module RVM
 
     def reset_cmd version=nil
       if version.nil?
-        version = RubyVersion.new(File.basename(File.readlink(File.join(dir, 'current'))))
-        ruby_dir = File.join(RVM::RVM_RUBIES_DIR, version.to_s)
-      elsif version == 'internal'
-        ruby_dir = File.join(RVM::RVM_DIR, 'myruby')
-      elsif not version.is_a? RubyVersion
-        raise "Invalid version #{RubyVersion.inspect}"
+        version = makeVersion(File.basename(File.readlink(File.join(dir, 'current'))))
+      else
+        version = makeVersion version
       end
+      ruby_dir = version.path
 
       # Remove old symlinks
       Dir.entries(bin_dir).find_all {|i| not i.starts_with? '.'}.each do |f|
         path = File.join(bin_dir, f)
-        File.unlink path if File.symlink? path
+        File.unlink path if File.exists? path or File.symlink? path
       end
 
       Dir.entries(File.join(ruby_dir, 'bin')).find_all {|i| not i.starts_with? '.'}.each do |fname|
-        if ['gem'].include? fname
-          # We need a special shell script instead.
+        if not version.is_a? MyRubyVersion
+          # We need a special shell script to control variables.
           File.open(File.join(bin_dir, fname), 'w') do |fh|
             fh.write <<EOF
 #!/bin/sh
 
+export GEM_HOME="#{File.join(RVM::RVM_DIR,'gems')}"
+export GEM_PATH="#{File.join(RVM::RVM_DIR,'gems')}"
 #{File.join(ruby_dir, 'bin', fname)} "$@"
-
-#{File.join(RVM::RVM_BIN_DIR, 'rvm2')} reset
-
 EOF
+
+            fh.write "#{File.join(RVM::RVM_BIN_DIR, 'rvm2')} reset\n" if ['gem'].include? fname
           end
           File.chmod 0755, File.join(bin_dir, fname)
         else
@@ -129,16 +122,22 @@ EOF
       end
     end
 
-    def install_ruby_cmd version
-      version = RubyVersion.new version
+    def install_ruby_cmd version, force=false
+      version = makeVersion version
       tarball = fetch_ruby_cmd version
-      unpack_dir = File.join(RVM::RVM_SRC_DIR, File.basename(tarball))
+      unpack_dir = File.join(RVM::RVM_SRC_DIR,    version.to_s)
+      final_dir  = File.join(RVM::RVM_RUBIES_DIR, version.to_s)
 
-      FileUtils.rm_rf unpack_dir if File.directory? unpack_dir
+      if File.directory? final_dir and not force
+        raise "#{version} is already built."
+      else
+        FileUtils.rm_rf unpack_dir
+        FileUtils.rm_rf final_dir
 
-      RVM::Utils::unpack tarball, RVM::RVM_SRC_DIR
+        RVM.unpack tarball, RVM::RVM_SRC_DIR
 
-      RVM::Utils::compile unpack_dir
+        RVM.compile unpack_dir
+      end
     end
 
     def remove_ruby_cmd version
@@ -147,9 +146,8 @@ EOF
 
     # fetch_ruby -- Fetch the requested version of ruby.
     def fetch_ruby_cmd version
-      version = RubyVersion.new version
-      tarball = File.join(RVM::RVM_ARCHIVE_DIR, "#{version}.tar.gz")
-      if not File.exists? tarball
+      version = makeVersion version
+      if not File.exists? version.tarball_path
         #url = "http://ftp.ruby-lang.org/pub/ruby/1.$rvm_major_version/$rvm_ruby_package_file.$rvm_archive_extension"
         raise 'Not Implemented'
       end

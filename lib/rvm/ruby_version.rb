@@ -13,6 +13,23 @@ module RVM
     end
   end
 
+  # makeVersion -- A Factory method to create RubyVersion.
+  def makeVersion string
+    if string.is_a? RubyVersion
+      return string
+    elsif string.is_a? String
+      if string == 'default'
+        return RubyVersion.new 'ruby-1.8.7-p174'
+      elsif ['internal','myruby'].include? string
+        return MyRubyVersion.new
+      else
+        return RubyVersion.new string
+      end
+    else
+      raise "Invalid RubyVersion"
+    end
+  end
+
   # RubyVersion -- A class to manage and normalize the ruby package versions.
   class RubyVersion
     include Comparable
@@ -22,12 +39,11 @@ module RVM
     latests = LatestVersions.new
 
     def initialize string
-      string = string.to_s
-
-      if string == 'default'
-        # NARF hack
-        string = 'ruby-1.8.7-p174'
+      if string.nil?
+        raise "Nil ruby version"
       end
+
+      string = string.to_s
 
       # Figure out the interpreter.
       if string.match /^[0-9]/
@@ -35,6 +51,7 @@ module RVM
       else
         tmp = string.split('-',2)
         @interpreter = tmp[0]
+        raise "Invalid string '#{string}'" if tmp[1].nil?
         string = tmp[1]
       end
 
@@ -87,40 +104,72 @@ module RVM
       end
       parts.join('-')
     end
-  end
 
-  def <=>(other)
-    return 1 if other.nil?
+    def <=>(other)
+      return 1 if other.nil?
 
-    def nilcmp a,b
-      return -1 if a.nil? and not b.nil?
-      return  1 if not a.nil? and b.nil?
-      return 0
+      def nilcmp a,b
+        return -1 if a.nil? and not b.nil?
+        return  1 if not a.nil? and b.nil?
+        return 0
+      end
+
+      c = nilcmp @interpreter, other.interpreter
+      return c if c != 0
+      c = @interpreter <=> other.interpreter
+      return c if c != 0
+
+      c = nilcmp @version, other.version
+      return c if c != 0
+      c = @version     <=> other.version
+      return c if c != 0
+
+      c = nilcmp @major, other.major
+      return c if c != 0
+      c = @major       <=> other.major
+      return c if c != 0
+
+      c = nilcmp @minor, other.minor
+      return c if c != 0
+      c = @minor       <=> other.minor
+      return c if c != 0
+
+      c = nilcmp @patch, other.patch
+      c = @patch       <=> other.patch
+      return c
     end
 
-    c = nilcmp @interpreter, other.interpreter
-    return c if c != 0
-    c = @interpreter <=> other.interpreter
-    return c if c != 0
+    def path
+      return File.join(RVM::RVM_RUBIES_DIR,to_s)
+    end
 
-    c = nilcmp @version, other.version
-    return c if c != 0
-    c = @version     <=> other.version
-    return c if c != 0
+    def src_path
+      return File.join(RVM::RVM_SRC_DIR,to_s)
+    end
 
-    c = nilcmp @major, other.major
-    return c if c != 0
-    c = @major       <=> other.major
-    return c if c != 0
+    def tarball_path
+      return File.join(RVM::RVM_ARCHIVE_DIR, "#{to_s}.tar.gz")
+    end
+  end
 
-    c = nilcmp @minor, other.minor
-    return c if c != 0
-    c = @minor       <=> other.minor
-    return c if c != 0
-
-    c = nilcmp @patch, other.patch
-    c = @patch       <=> other.patch
-    return c
+  class MyRubyVersion < RubyVersion
+    def initialize
+    end
+    def guess!
+    end
+    def <=>(other)
+      if other.is_a? MyRubyVersion
+        return 0
+      else
+        return 1
+      end
+    end
+    def to_s
+      return 'myruby'
+    end
+    def path
+      return File.join(RVM::RVM_DIR, 'myruby')
+    end
   end
 
   LATESTS = [ RubyVersion.new('ruby-1.8.6-p383'),

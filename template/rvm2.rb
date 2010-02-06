@@ -46,7 +46,7 @@ else
   when 'default'  then session.set_ruby_cmd 'default'
   when 'system'   then session.set_ruby_cmd 'system'
   when 'internal' then session.set_ruby_cmd 'internal'
-  else                session.set_ruby_cmd ARGV[1]
+  else                 session.set_ruby_cmd ARGV[0]
   end
 end
 

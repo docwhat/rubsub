@@ -6,6 +6,7 @@ module RVM
   RVM_BIN_DIR      = File.join RVM_DIR, 'bin'
   RVM_ARCHIVE_DIR  = File.join RVM_DIR, 'archive'
   RVM_SRC_DIR      = File.join RVM_DIR, 'src'
+  RVM_LOG_DIR      = File.join RVM_DIR, 'log'
   RVM_SESSION_DIR  = File.join RVM_DIR, 'sessions'
   RVM_RUBIES_DIR   = File.join RVM_DIR, 'rubies'
 end
