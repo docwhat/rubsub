@@ -43,9 +43,7 @@ else
   when 'remove'   then session.remove_ruby_cmd ARGV[1]
   when 'info'     then session.info_cmd
   when 'reset'    then session.reset_cmd
-  when 'default'  then session.set_ruby_cmd 'default'
   when 'system'   then session.set_ruby_cmd 'system'
-  when 'internal' then session.set_ruby_cmd 'internal'
   else                 session.set_ruby_cmd ARGV[0]
   end
 end
