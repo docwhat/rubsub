@@ -80,7 +80,7 @@ rvm_install_myruby() {
             > "${log_dir}/myruby-make.log" 2>&1
 
         # Install some handy gems
-        ${rvm_dir}/myruby/bin/gem install rspec \
+        ${rvm_dir}/myruby/bin/gem install rspec ZenTest diff-lcs \
             > "${log_dir}/myruby-gem.log" 2>&1
 
         # Write a version
