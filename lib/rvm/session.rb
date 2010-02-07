@@ -5,6 +5,7 @@ require 'net/http'
 require 'fileutils'
 
 module RVM
+
   class Session
     SESSION_CHARS = ("a".."z").to_a + ("A".."Z").to_a + ("0".."9").to_a
     attr_reader :sid
@@ -93,6 +94,9 @@ module RVM
         version = makeVersion version
       end
       ruby_dir = version.path
+      if not File.directory? ruby_dir
+        raise NoSuchRubyError, version, caller
+      end
 
       # Remove old symlinks
       Dir.entries(bin_dir).find_all {|i| not i.starts_with? '.'}.each do |f|

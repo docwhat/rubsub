@@ -35,17 +35,30 @@ session = RVM::Session.new
 
 $VERBOSE = options[:verbose]
 
-if ARGV.length == 0
-  session.info_cmd :short
-else
-  case ARGV[0]
-  when 'install'  then session.install_ruby_cmd ARGV[1]
-  when 'remove'   then session.remove_ruby_cmd ARGV[1]
-  when 'info'     then session.info_cmd
-  when 'reset'    then session.reset_cmd
-  when 'system'   then session.set_ruby_cmd 'system'
-  else                 session.set_ruby_cmd ARGV[0]
+def problem message
+  puts "** Error **"
+  puts message.chomp
+  exit 1
+end
+
+begin
+  if ARGV.length == 0
+    session.info_cmd :short
+  else
+    case ARGV[0]
+    when 'install'  then session.install_ruby_cmd ARGV[1]
+    when 'remove'   then session.remove_ruby_cmd ARGV[1]
+    when 'info'     then session.info_cmd
+    when 'reset'    then session.reset_cmd
+    when 'system'   then session.set_ruby_cmd 'system'
+    else                 session.set_ruby_cmd ARGV[0]
+    end
   end
+rescue RVM::NoSuchRubyError => e
+  problem <<EOF
+#{e.version} isn't installed.
+Try: #{File.basename $0} install #{e.version}
+EOF
 end
 
 # EOF
