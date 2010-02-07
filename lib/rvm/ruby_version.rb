@@ -15,6 +15,26 @@ module RVM
 
   # makeVersion -- A Factory method to create RubyVersion.
   def makeVersion string
+    rv = nil
+    if string.is_a? RubyVersion
+      rv = string
+    elsif string.is_a? String
+      if string == 'default'
+        rv = RubyVersion.new 'ruby-1.8.7-p174'
+      elsif ['internal','myruby'].include? string
+        rv = MyRubyVersion.new
+      else
+        rv = RubyVersion.new string
+      end
+    end
+    rv.guess! unless rv.nil?
+    if rv.nil? or not rv.complete?
+      raise "Invalid RubyVersion"
+    end
+    return rv
+  end
+
+  def findVersion string
     if string.is_a? RubyVersion
       return string
     elsif string.is_a? String
@@ -23,7 +43,19 @@ module RVM
       elsif ['internal','myruby'].include? string
         return MyRubyVersion.new
       else
-        return RubyVersion.new string
+        rv = RubyVersion.new string
+        if not rv.complete?
+          found = []
+          Dir.entries(RVM::RVM_RUBIES_DIR).find_all do |f|
+            found << f unless f.starts_with?('.') or not File.directory?(File.join RVM::RVM_RUBIES_DIR, f) or not f.starts_with?(rv.to_s)
+          end
+        end
+        if found.length > 0
+          found.sort!
+          return RubyVersion.new found[-1]
+        else
+          raise NoSuchRubyError, string, caller
+        end
       end
     else
       raise "Invalid RubyVersion"
@@ -82,10 +114,21 @@ module RVM
       end
     end # intialize
 
+    # complete? -- Returns true if it is complete
+    def complete?
+      not (@major.nil? or @minor.nil? or @patch.nil?)
+    end
+
     def guess!
       # If anything is still nill, then start guessing.
-      if @major.nil? or @minor.nil? or @patch.nil?
-        LATESTS.sort!
+      if not complete?
+        l = LATESTS.clone.find_all {|x| x.to_s.starts_with? to_s}.sort
+        if l.length > 0
+          v = l[-1]
+          @major = v.major
+          @minor = v.minor
+          @patch = v.patch
+        end
       end
     end
 
@@ -153,10 +196,8 @@ module RVM
   end
 
   class MyRubyVersion < RubyVersion
-    def initialize
-    end
-    def guess!
-    end
+    def initialize; end
+    def guess!; end
     def <=>(other)
       if other.is_a? MyRubyVersion
         return 0
@@ -164,12 +205,9 @@ module RVM
         return 1
       end
     end
-    def to_s
-      return 'myruby'
-    end
-    def path
-      return File.join(RVM::RVM_DIR, 'myruby')
-    end
+    def to_s; return 'myruby'; end
+    def complete?; return true; end
+    def path; return File.join(RVM::RVM_DIR, 'myruby'); end
   end
 
   LATESTS = [ RubyVersion.new('ruby-1.8.6-p383'),

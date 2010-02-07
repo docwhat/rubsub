@@ -39,8 +39,12 @@ describe RVM::RubyVersion do
   end
 
   it "should add ruby as a prefix if it doesn't have one" do
-    RVM::makeVersion('1.8.7').to_s[0,10].should == 'ruby-1.8.7'
-    RVM::makeVersion('1.9.1').to_s[0,10].should == 'ruby-1.9.1'
+    ['1.8.7', '1.9.1'].each do |s|
+      v = RVM::makeVersion(s)
+      v.complete?.should be_true
+      s2 = "ruby-#{s}"
+      v.to_s[0,s2.length].should == s2
+    end
   end
 
   it "should be able to take a RubyVersion as an argument to new." do

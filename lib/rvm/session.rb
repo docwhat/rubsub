@@ -75,7 +75,7 @@ module RVM
     end
 
     def set_ruby_cmd version
-      v = makeVersion version
+      v = findVersion version
       ruby_dir = v.path
       reset_cmd v
 
@@ -94,9 +94,6 @@ module RVM
         version = makeVersion version
       end
       ruby_dir = version.path
-      if not File.directory? ruby_dir
-        raise NoSuchRubyError, version, caller
-      end
 
       # Remove old symlinks
       Dir.entries(bin_dir).find_all {|i| not i.starts_with? '.'}.each do |f|
