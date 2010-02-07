@@ -23,10 +23,12 @@ optparse = OptionParser.new do|opts|
   shell = File.basename ENV['SHELL']
   if shell.starts_with? 'csh'
     options[:shell] = :csh
+  elsif shell.starts_with? 'zsh'
+    options[:shell] = :zsh
   else
     options[:shell] = :sh
   end
-  opts.on('-s', '--shell SHELL', [:csh, :sh],
+  opts.on('-s', '--shell SHELL', [:csh, :sh, :zsh],
           "The type of shell you're using. (default: #{options[:shell]}") do |s|
     options[:shell] = s
   end
@@ -94,7 +96,8 @@ else
 PATH='#{path.join ':'}'; export PATH;
 EOF
   puts "echo $$ > #{File.join session.dir, 'shell.pid'};"
-  puts "rvm2 default;"
+  puts "rvm2 reset;"
+  puts "hash -r;" if options[:shell] == :zsh
 end
 
 # EOF

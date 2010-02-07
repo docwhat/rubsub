@@ -89,11 +89,15 @@ module RVM
 
     def reset_cmd version=nil
       if version.nil?
-        version = makeVersion(File.basename(File.readlink(File.join(dir, 'current'))))
+        current = File.join(dir, 'current')
+        return set_ruby_cmd 'default' unless File.exists? current
+        version = makeVersion(File.basename(File.readlink(current)))
       else
         version = makeVersion version
       end
       ruby_dir = version.path
+
+      raise NoSuchRubyError, version, caller unless File.directory? ruby_dir
 
       # Remove old symlinks
       Dir.entries(bin_dir).find_all {|i| not i.starts_with? '.'}.each do |f|
@@ -108,8 +112,6 @@ module RVM
             fh.write <<EOF
 #!/bin/sh
 
-export GEM_HOME="#{File.join(RVM::RVM_DIR,'gems')}"
-export GEM_PATH="#{File.join(RVM::RVM_DIR,'gems')}"
 #{File.join(ruby_dir, 'bin', fname)} "$@"
 EOF
 
@@ -125,6 +127,7 @@ EOF
 
     def install_ruby_cmd version, force=false
       version = makeVersion version
+      return if version.is_a? MyRubyVersion
       tarball = fetch_ruby_cmd version
       unpack_dir = File.join(RVM::RVM_SRC_DIR,    version.to_s)
       final_dir  = File.join(RVM::RVM_RUBIES_DIR, version.to_s)
