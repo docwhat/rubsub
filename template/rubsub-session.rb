@@ -1,4 +1,4 @@
-# rvm-session.rb -- This sets up your RubSub session environment.
+# rubsub-session.rb -- This sets up your RubSub session environment.
 
 require 'rubsub'
 require 'optparse'
@@ -96,8 +96,11 @@ else
 PATH='#{path.join ':'}'; export PATH;
 EOF
   puts "echo $$ > #{File.join session.dir, 'shell.pid'};"
+  if options[:shell] == :zsh
+    puts 'rubdub() { command rubdub "$@" && rehash; };'
+    puts 'gem()    { command gem "$@" && rehash; };'
+  end
   puts "rubsub reset;"
-  puts "hash -r;" if options[:shell] == :zsh
 end
 
 # EOF
