@@ -1,10 +1,10 @@
-require 'rvm/constants'
-require 'rvm/utils'
-require 'rvm/ruby_version'
+require 'rubsub/constants'
+require 'rubsub/utils'
+require 'rubsub/ruby_version'
 require 'net/http'
 require 'fileutils'
 
-module RVM
+module RubSub
 
   class Session
     SESSION_CHARS = ("a".."z").to_a + ("A".."Z").to_a + ("0".."9").to_a
@@ -12,7 +12,7 @@ module RVM
 
     # initialize -- Pass in :new to allow a new session to be created.
     def initialize type = :old
-      @sid = ENV[RVM::SESSION_VARIABLE]
+      @sid = ENV[RubSub::SESSION_VARIABLE]
       @sid = nil unless not @sid.nil? and File.exists? bin_dir
 
 
@@ -22,21 +22,21 @@ module RVM
           while @sid.nil?
             tmp = ''
             1.upto(rand(16)) { |i| tmp << SESSION_CHARS[rand(SESSION_CHARS.size-1)] }
-            @sid = tmp unless File.exists? File.join(RVM_SESSION_DIR, tmp)
+            @sid = tmp unless File.exists? File.join(RubSub::SESSION_DIR, tmp)
           end
 
           # Create the session directory.
           Dir.mkdir dir
           Dir.mkdir bin_dir
         else
-          raise "You must run rvm-session first"
+          raise "You must run rubsub-session first"
         end
       end
     end
 
     # dir -- The session directory.
     def dir
-      File.join RVM_SESSION_DIR, @sid
+      File.join RubSub::SESSION_DIR, @sid
     end
 
     # bin_dir -- The session bin directory.
@@ -115,7 +115,7 @@ module RVM
 #{File.join(ruby_dir, 'bin', fname)} "$@"
 EOF
 
-            fh.write "#{File.join(RVM::RVM_BIN_DIR, 'rvm2')} reset\n" if ['gem'].include? fname
+            fh.write "#{File.join(RubSub::BIN_DIR, 'rubsub')} reset\n" if ['gem'].include? fname
           end
           File.chmod 0755, File.join(bin_dir, fname)
         else
@@ -129,8 +129,8 @@ EOF
       version = makeVersion version
       return if version.is_a? MyRubyVersion
       tarball = fetch_ruby_cmd version
-      unpack_dir = File.join(RVM::RVM_SRC_DIR,    version.to_s)
-      final_dir  = File.join(RVM::RVM_RUBIES_DIR, version.to_s)
+      unpack_dir = File.join(RubSub::SRC_DIR,    version.to_s)
+      final_dir  = File.join(RubSub::RUBIES_DIR, version.to_s)
 
       if File.directory? final_dir and not force
         raise "#{version} is already built."
@@ -138,9 +138,9 @@ EOF
         FileUtils.rm_rf unpack_dir
         FileUtils.rm_rf final_dir
 
-        RVM.unpack tarball, RVM::RVM_SRC_DIR
+        RubSub.unpack tarball, RubSub::SRC_DIR
 
-        RVM.compile unpack_dir
+        RubSub.compile unpack_dir
       end
     end
 
@@ -152,7 +152,7 @@ EOF
     def fetch_ruby_cmd version
       version = makeVersion version
       if not File.exists? version.tarball_path
-        #url = "http://ftp.ruby-lang.org/pub/ruby/1.$rvm_major_version/$rvm_ruby_package_file.$rvm_archive_extension"
+        #url = "http://ftp.ruby-lang.org/pub/ruby/1.$rubsub_major_version/$rubsub_ruby_package_file.$rubsub_archive_extension"
         raise 'Not Implemented'
       end
       return tarball

@@ -1,13 +1,13 @@
-=RVM2=
+=RUBSUB=
 
-This is (currently) a prototype to see if we can run RVM entirely
+This is (currently) a prototype to see if we can run RubSub entirely
 within ruby.
 
 WARNING: Don't expect anything to work!
 
 ==Quickstart==
 
-curl -q http://github.com/docwhat/rvm2/raw/stable/rvm-install.sh | bash
+curl -q http://github.com/docwhat/rubsub2/raw/stable/rubsub-install.sh | bash
 
 (yup, it's that simple)
 
@@ -22,15 +22,15 @@ curl -q http://github.com/docwhat/rvm2/raw/stable/rvm-install.sh | bash
 We will download and compile miniruby.  This will give us a static, simple ruby
 with a lot of features.
 
-Implemented in rvm-install.sh
+Implemented in rubsub-install.sh
 
 ===per-shell status===
 
-Use a "session-key" to control the rvm configuration.
+Use a "session-key" to control the rubsub configuration.
 
 I have two thoughts:
   # Use $SHELL-$$ -- This is not guaranteed unique, especially given infinite time.
-  # Require that your shell run "eval rvm --start-session" which creates an environment
+  # Require that your shell run "eval rubsub --start-session" which creates an environment
     with a read-only session id.
 
 ===Getting the code===

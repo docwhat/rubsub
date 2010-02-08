@@ -1,6 +1,6 @@
-# rvm-session.rb -- This sets up your RVM session environment.
+# rvm-session.rb -- This sets up your RubSub session environment.
 
-require 'rvm'
+require 'rubsub'
 require 'optparse'
 require 'fileutils'
 require 'pp'
@@ -42,12 +42,12 @@ end
 optparse.parse!
 
 # Make sure the session top-level directory exists.
-Dir.mkdir RVM_SESSION_DIR unless File.exists? RVM_SESSION_DIR
+Dir.mkdir RubSub::SESSION_DIR unless File.exists? RubSub::SESSION_DIR
 
 # Clean up old sessions.
-existing = (Dir.entries RVM_SESSION_DIR).find_all {|i| not i.starts_with? '.'}
+existing = (Dir.entries RubSub::SESSION_DIR).find_all {|i| not i.starts_with? '.'}
 existing.each do |dir|
-  path = File.join RVM_SESSION_DIR, dir
+  path = File.join RubSub::SESSION_DIR, dir
   delete = false
   if File.exists? File.join(path, 'shell.pid')
     File.open File.join(path, 'shell.pid'), 'r' do |fd|
@@ -68,14 +68,14 @@ existing.each do |dir|
   end
 end
 
-session = RVM::Session.new :new
+session = RubSub::Session.new :new
 
 # Modify the path.
 path_hash = {}
 old_path = ENV['PATH'].split ':'
 # Add in our paths.
 old_path.unshift session.bin_dir
-old_path.unshift RVM_BIN_DIR
+old_path.unshift RubSub::BIN_DIR
 path = []
 old_path.each do |item|
   if not path_hash.has_key? item
@@ -87,16 +87,16 @@ end
 # Display the shell commands.
 if options[:shell] == :csh
   puts <<EOF
-setenv #{RVM::SESSION_VARIABLE} #{session.sid};
+setenv #{RubSub::SESSION_VARIABLE} #{session.sid};
 setenv PATH '#{path.join ':'}'
 EOF
 else
   puts <<EOF
-#{RVM::SESSION_VARIABLE}=#{session.sid}; export #{RVM::SESSION_VARIABLE};
+#{RubSub::SESSION_VARIABLE}=#{session.sid}; export #{RubSub::SESSION_VARIABLE};
 PATH='#{path.join ':'}'; export PATH;
 EOF
   puts "echo $$ > #{File.join session.dir, 'shell.pid'};"
-  puts "rvm2 reset;"
+  puts "rubsub reset;"
   puts "hash -r;" if options[:shell] == :zsh
 end
 

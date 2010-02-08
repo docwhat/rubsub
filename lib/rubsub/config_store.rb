@@ -1,6 +1,6 @@
 # This doesn't use yml because yml doesn't work in miniruby.
 
-module RVM
+module RubSub
 
   class ConfigStore
     # DEFAULTS -- A list of options and their default values.

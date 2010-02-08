@@ -1,7 +1,7 @@
-require 'rvm/constants'
-require 'rvm/config_store'
+require 'rubsub/constants'
+require 'rubsub/config_store'
 
-module RVM
+module RubSub
   class LatestVersions < ConfigStore
     @@defaults = {
       :"ruby-1.8" => nil,
@@ -9,7 +9,7 @@ module RVM
     }.freeze
 
     def filename
-      File.join RVM_DIR, 'config.yml'
+      File.join RubSub::DIR, 'config.yml'
     end
   end
 
@@ -46,8 +46,8 @@ module RVM
         rv = RubyVersion.new string
         if not rv.complete?
           found = []
-          Dir.entries(RVM::RVM_RUBIES_DIR).find_all do |f|
-            found << f unless f.starts_with?('.') or not File.directory?(File.join RVM::RVM_RUBIES_DIR, f) or not f.starts_with?(rv.to_s)
+          Dir.entries(RubSub::RUBIES_DIR).find_all do |f|
+            found << f unless f.starts_with?('.') or not File.directory?(File.join RubSub::RUBIES_DIR, f) or not f.starts_with?(rv.to_s)
           end
         end
         if found.length > 0
@@ -183,15 +183,15 @@ module RVM
     end
 
     def path
-      return File.join(RVM::RVM_RUBIES_DIR,to_s)
+      return File.join(RubSub::RUBIES_DIR,to_s)
     end
 
     def src_path
-      return File.join(RVM::RVM_SRC_DIR,to_s)
+      return File.join(RubSub::SRC_DIR,to_s)
     end
 
     def tarball_path
-      return File.join(RVM::RVM_ARCHIVE_DIR, "#{to_s}.tar.gz")
+      return File.join(RubSub::ARCHIVE_DIR, "#{to_s}.tar.gz")
     end
   end
 
@@ -207,7 +207,7 @@ module RVM
     end
     def to_s; return 'myruby'; end
     def complete?; return true; end
-    def path; return File.join(RVM::RVM_DIR, 'myruby'); end
+    def path; return File.join(RubSub::DIR, 'myruby'); end
   end
 
   LATESTS = [ RubyVersion.new('ruby-1.8.6-p383'),

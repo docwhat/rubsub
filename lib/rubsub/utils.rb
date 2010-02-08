@@ -1,8 +1,8 @@
-require 'rvm/constants'
-require 'rvm/ruby_version'
+require 'rubsub/constants'
+require 'rubsub/ruby_version'
 require 'net/http'
 
-module RVM
+module RubSub
   # unpack -- Unpacks a tarball.
   def unpack src, dst
     raise "No such tarball: #{src}" unless File.exists? src
@@ -91,7 +91,7 @@ module RVM
       flags = get_flags
       ENV['CFLAGS']  = flags[:cflags]
       ENV['LDFLAGS'] = flags[:ldflags]
-      cmd = "./configure --prefix=\"#{File.join(RVM::RVM_RUBIES_DIR,rubyver)}\" #{flags[:configure]}"
+      cmd = "./configure --prefix=\"#{File.join(RubSub::RUBIES_DIR,rubyver)}\" #{flags[:configure]}"
       log "compile-#{rubyver}", cmd
       log "compile-#{rubyver}", `#{cmd} 2>&1`
       log "compile-#{rubyver}", "********************make********************"
@@ -105,7 +105,7 @@ module RVM
 
   def log name, msg, reset=false
     flag = reset ? 'w' : 'a'
-    File.open(File.join(RVM::RVM_LOG_DIR,"#{name}.log"), flag) do |f|
+    File.open(File.join(RubSub::LOG_DIR,"#{name}.log"), flag) do |f|
       f.write(msg + "\n")
     end
   end

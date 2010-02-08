@@ -1,3 +1,3 @@
 $:.unshift File.join('.','lib')
 
-require 'rvm'
+require 'rubsub'

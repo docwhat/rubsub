@@ -1,6 +1,6 @@
-require 'rvm/constants'
+require 'rubsub/constants'
 
-module RVM
+module RubSub
 
   class Config < ConfigStore
     @@defaults = {
@@ -9,7 +9,7 @@ module RVM
     }.freeze
 
     def filename
-      File.join RVM_DIR, 'config.yml'
+      File.join RubSub::DIR, 'config.yml'
     end
   end
 end

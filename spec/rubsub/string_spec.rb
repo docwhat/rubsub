@@ -1,5 +1,5 @@
 
-require 'rvm'
+require 'rubsub'
 
 describe String do
   it "should correctly detect starting strings" do

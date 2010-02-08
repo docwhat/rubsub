@@ -1,6 +1,6 @@
-# rvm2.rb -- A tool to manage your RVM environment.
+# rubsub2.rb -- A tool to manage your RubSub environment.
 
-require 'rvm'
+require 'rubsub'
 require 'optparse'
 
 # This hash will hold all of the options
@@ -31,7 +31,7 @@ end
 # the options. What's left is the list of files to resize.
 optparse.parse!
 
-session = RVM::Session.new
+session = RubSub::Session.new
 
 $VERBOSE = options[:verbose]
 
@@ -54,7 +54,7 @@ begin
     else                 session.set_ruby_cmd ARGV[0]
     end
   end
-rescue RVM::NoSuchRubyError => e
+rescue RubSub::NoSuchRubyError => e
   problem <<EOF
 #{e.version} isn't installed.
 Try: #{File.basename $0} install #{e.version}

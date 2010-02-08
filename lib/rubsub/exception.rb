@@ -1,5 +1,5 @@
 
-module RVM
+module RubSub
   class NoSuchRubyError < StandardError
     attr_reader :version
     def initialize version

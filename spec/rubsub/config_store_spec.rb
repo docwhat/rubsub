@@ -1,4 +1,4 @@
-require 'rvm'
+require 'rubsub'
 
 CONFFILE = 'test-#{Process::pid}.store'
 
