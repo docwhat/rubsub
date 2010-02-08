@@ -155,7 +155,7 @@ EOF
         #url = "http://ftp.ruby-lang.org/pub/ruby/1.$rubsub_major_version/$rubsub_ruby_package_file.$rubsub_archive_extension"
         raise 'Not Implemented'
       end
-      return tarball
+      return version.tarball_path
     end
 
   end # End class Session

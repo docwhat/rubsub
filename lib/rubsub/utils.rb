@@ -101,6 +101,7 @@ module RubSub
     ensure
       Dir.chdir old_cwd
     end
+    puts "Finished compiling #{rubyver}!"
   end
 
   def log name, msg, reset=false
