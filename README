@@ -1,9 +1,13 @@
 =RUBSUB=
 
-This is (currently) a prototype to see if we can run RubSub entirely
-within ruby.
+This is based on the concept of RVM, but is designed to run entirely
+as ruby.
 
-WARNING: Don't expect anything to work!
+RVM: Information on RVM is available at http://rvm.beginrescueend.com/
+Thanks to Wayne E. Seguin for helping out.
+
+WARNING: This is still alpha code; Don't expect anything to work!  Use
+RVM if you need something to actually work. :-)
 
 ==Quickstart==
 
