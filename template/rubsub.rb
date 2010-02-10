@@ -1,4 +1,4 @@
-# rubsub2.rb -- A tool to manage your RubSub environment.
+# rubsub.rb -- A tool to manage your RubSub environment.
 
 require 'rubsub'
 require 'optparse'
@@ -50,6 +50,7 @@ begin
     when 'remove'   then session.remove_ruby_cmd ARGV[1]
     when 'info'     then session.info_cmd
     when 'reset'    then session.reset_cmd
+    when 'update'   then session.update_cmd
     when 'system'   then session.set_ruby_cmd 'system'
     else                 session.set_ruby_cmd ARGV[0]
     end

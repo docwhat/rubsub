@@ -7,6 +7,7 @@ module RubSub
   RubSub::ARCHIVE_DIR  = File.join RubSub::DIR, 'archive'
   RubSub::SRC_DIR      = File.join RubSub::DIR, 'src'
   RubSub::LOG_DIR      = File.join RubSub::DIR, 'log'
+  RubSub::DB_DIR       = File.join RubSub::DIR, 'db'
   RubSub::SESSION_DIR  = File.join RubSub::DIR, 'sessions'
   RubSub::RUBIES_DIR   = File.join RubSub::DIR, 'rubies'
 end

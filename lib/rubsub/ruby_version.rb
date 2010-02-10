@@ -1,18 +1,8 @@
 require 'rubsub/constants'
 require 'rubsub/config_store'
+require 'net/http'
 
 module RubSub
-  class LatestVersions < ConfigStore
-    @@defaults = {
-      :"ruby-1.8" => nil,
-      :"ruby-1.9" => nil
-    }.freeze
-
-    def filename
-      File.join RubSub::DIR, 'config.yml'
-    end
-  end
-
   # makeVersion -- A Factory method to create RubyVersion.
   def makeVersion string
     rv = nil
@@ -39,7 +29,7 @@ module RubSub
       return string
     elsif string.is_a? String
       if string == 'default'
-        return RubyVersion.new 'ruby-1.8.7-p174'
+        string = makeVersion '1.8'
       elsif ['internal','myruby'].include? string
         return MyRubyVersion.new
       else
@@ -67,8 +57,6 @@ module RubSub
     include Comparable
 
     attr_reader :version, :major, :minor, :patch, :interpreter
-
-    latests = LatestVersions.new
 
     def initialize string
       if string.nil?
@@ -122,7 +110,11 @@ module RubSub
     def guess!
       # If anything is still nill, then start guessing.
       if not complete?
-        l = LATESTS.clone.find_all {|x| x.to_s.starts_with? to_s}.sort
+        if @interpreter == 'ruby'
+          l = get_ruby_versions.clone.find_all {|x| x.to_s.starts_with? to_s}.sort
+        else
+          raise "Not Implemented"
+        end
         if l.length > 0
           v = l[-1]
           @major = v.major
@@ -130,6 +122,13 @@ module RubSub
           @patch = v.patch
         end
       end
+    end
+
+    def freeze
+      @patch = 0 if @patch.nil?
+      @major = 0 if @major.nil?
+      @minor = 0 if @minor.nil?
+      super
     end
 
     def to_s
@@ -142,7 +141,7 @@ module RubSub
       ver << @major   unless @major.nil?
       ver << @minor   unless @minor.nil?
       parts << ver.join('.')
-      if not @patch.nil?
+      if not @patch.nil? and @patch != 0
         parts << "p#{@patch}"
       end
       parts.join('-')
@@ -193,6 +192,32 @@ module RubSub
     def tarball_path
       return File.join(RubSub::ARCHIVE_DIR, "#{to_s}.tar.gz")
     end
+
+    # tarball_url -- Return the remote URL to fetch the tarball from.
+    def tarball_url
+      if @interpreter == 'ruby'
+        return "http://ftp.ruby-lang.org/pub/ruby/#{@version}.#{@major}/#{to_s}.tar.gz"
+      else
+        raise "Not Implemented"
+      end
+    end
+
+    def fetch force=false
+      if not File.exists? tarball_path or force
+        if @interpreter == 'ruby'
+          File.unlink tarball_path if File.exists? tarball_path
+
+          uri = URI.parse(tarball_url)
+          Net::HTTP.start(uri.host, uri.port) do |http|
+            resp = http.get(uri.path, initheader={'accept-encoding' => ''})
+            File.open(tarball_path, 'wb') { |f| f.write resp.body }
+          end
+        else
+          raise "Not Implemented"
+        end
+      end
+      return tarball_path
+    end
   end
 
   class MyRubyVersion < RubyVersion
@@ -210,9 +235,4 @@ module RubSub
     def path; return File.join(RubSub::DIR, 'myruby'); end
   end
 
-  LATESTS = [ RubyVersion.new('ruby-1.8.6-p383'),
-              RubyVersion.new('ruby-1.8.6-p388'),
-              RubyVersion.new('ruby-1.8.7-p249'),
-              RubyVersion.new('ruby-1.9.1-p378')
-            ]
 end

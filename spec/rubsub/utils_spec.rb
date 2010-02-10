@@ -20,4 +20,9 @@ describe RubSub do
     f.has_key?(:ldflags).should be_true
   end
 
+  it "should get all the Ruby versions" do
+    p "NARF"
+    p RubSub.get_ruby_versions
+  end
+
 end

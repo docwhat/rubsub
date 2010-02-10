@@ -1,8 +1,16 @@
 require 'rubsub/constants'
 require 'rubsub/ruby_version'
 require 'net/http'
+require 'yaml'
+require 'nokogiri'
+require 'open4'
 
 module RubSub
+
+  class LoggedError < StandardError
+    #TODO
+  end
+
   # unpack -- Unpacks a tarball.
   def unpack src, dst
     raise "No such tarball: #{src}" unless File.exists? src
@@ -91,23 +99,62 @@ module RubSub
       flags = get_flags
       ENV['CFLAGS']  = flags[:cflags]
       ENV['LDFLAGS'] = flags[:ldflags]
-      cmd = "./configure --prefix=\"#{File.join(RubSub::RUBIES_DIR,rubyver)}\" #{flags[:configure]}"
-      log "compile-#{rubyver}", cmd
-      log "compile-#{rubyver}", `#{cmd} 2>&1`
-      log "compile-#{rubyver}", "********************make********************"
-      log "compile-#{rubyver}", `make 2>&1`
-      log "compile-#{rubyver}", "********************make install********************"
-      log "compile-#{rubyver}", `make install 2>&1`
+      logrun "compile-#{rubyver}", "./configure --prefix=\"#{File.join(RubSub::RUBIES_DIR,rubyver)}\" #{flags[:configure]}"
+      logrun "compile-#{rubyver}", "make"
+      logrun "compile-#{rubyver}", "make install"
     ensure
       Dir.chdir old_cwd
     end
     puts "Finished compiling #{rubyver}!"
   end
 
+  # log -- Send a log a message to a file.
   def log name, msg, reset=false
     flag = reset ? 'w' : 'a'
     File.open(File.join(RubSub::LOG_DIR,"#{name}.log"), flag) do |f|
       f.write(msg + "\n")
     end
   end
+
+  # logrun -- Forks a process and sends the output to a logfile.
+  def logrun name, cmd, reset=false
+    flag = reset ? 'w' : 'a'
+
+    log_fname = File.join(RubSub::LOG_DIR, "#{name}.log")
+    File.open(log_fname, flag) do |f|
+      f.write "+" * 60; f.write "\n"
+      f.write "CMD: #{cmd}\n"
+      status = Open4::popen4(cmd) do |pid, stdin, stdout, stderr|
+        stdin.close
+        f.write stdout.gets
+        f.write stderr.gets
+      end
+      f.write "Exited with: #{status}\n"
+      f.write "-" * 60; f.write "\n"
+      raise "Error while running '#{cmd}'\nThe errors are in #{log_fname}" unless status.exitstatus == 0
+    end
+  end
+
+  # get_ruby_versions -- Checks the website for current versions.
+  def get_ruby_versions used_cached=true
+    cache_path = File.join(DB_DIR, 'ruby_versions')
+    if used_cached and File.exists? cache_path
+      return File.open(cache_path) { |inf| YAML::load(inf) }
+    else
+      found = []
+      Net::HTTP.start 'ftp.ruby-lang.org', 80 do |http|
+        ['1.6', '1.8', '1.9'].each do |base|
+          res = http.get("/pub/ruby/#{base}/")
+          found = found + Nokogiri::HTML(res.body).xpath("//li/a/@href").
+            map{|x| x.text}.
+            find_all {|x| x =~ /^ruby-#{base}\.\d+(-p\d+)?\.tar\.gz$/}.
+            map{|x| RubyVersion.new(x.sub(/\.tar\.gz$/,'')).freeze}
+        end
+      end
+      found.sort!
+      File.open(cache_path, 'w') { |out| YAML.dump(found, out) }
+      return found
+    end
+  end
+
 end

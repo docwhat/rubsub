@@ -128,7 +128,7 @@ EOF
     def install_ruby_cmd version, force=false
       version = makeVersion version
       return if version.is_a? MyRubyVersion
-      tarball = fetch_ruby_cmd version
+      tarball = version.fetch
       unpack_dir = File.join(RubSub::SRC_DIR,    version.to_s)
       final_dir  = File.join(RubSub::RUBIES_DIR, version.to_s)
 
@@ -152,10 +152,15 @@ EOF
     def fetch_ruby_cmd version
       version = makeVersion version
       if not File.exists? version.tarball_path
-        #url = "http://ftp.ruby-lang.org/pub/ruby/1.$rubsub_major_version/$rubsub_ruby_package_file.$rubsub_archive_extension"
-        raise 'Not Implemented'
+        url = version.tarball_url
+        raise "Not Implemented -- fetch #{version.to_s} -- #{url}"
       end
       return version.tarball_path
+    end
+
+    # update_cmd -- Updates various cached information.
+    def update_cmd
+      get_ruby_versions false
     end
 
   end # End class Session

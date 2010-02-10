@@ -80,7 +80,7 @@ rubsub_install_myruby() {
             > "${log_dir}/myruby-make.log" 2>&1
 
         # Install some handy gems
-        ${rubsub_dir}/myruby/bin/gem install rspec ZenTest diff-lcs \
+        ${rubsub_dir}/myruby/bin/gem install nokogiri rspec ZenTest diff-lcs \
             > "${log_dir}/myruby-gem.log" 2>&1
 
         # Write a version
@@ -139,7 +139,7 @@ rubsub_install_rubsub() {
 cd "${HOME}/.rubsub"
 
 # These directories can be re-used.
-for dir in archive src log config; do
+for dir in archive src log config db; do
     [[ -d ${dir} ]] || mkdir ${dir}
 done
 
