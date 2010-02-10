@@ -11,7 +11,7 @@ RVM if you need something to actually work. :-)
 
 ==Quickstart==
 
-curl -q http://github.com/docwhat/rubsub2/raw/stable/rubsub-install.sh | bash
+curl -q http://github.com/docwhat/rubsub/raw/stable/rubsub-install.sh | bash
 
 (yup, it's that simple)
 
