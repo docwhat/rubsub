@@ -12,6 +12,7 @@ ruby_ext=".tar.gz"
 
 ruby_url="http://ftp.ruby-lang.org/pub/ruby/1.9/ruby-1.9.1-p378${ruby_ext}"
 ruby_md5="9fc5941bda150ac0a33b299e1e53654c"
+ruby_rebuild_version=6
 
 ruby_base="$(basename ${ruby_url} ${ruby_ext})"
 log_dir="${rubsub_dir}/log"
@@ -58,11 +59,14 @@ rubsub_install_myruby() {
     if [ -r "${rubsub_dir}/myruby/.version" ]; then
         myruby_version="$(cat ${rubsub_dir}/myruby/.version)"
     fi
-    if [ "${myruby_version:-}" != "${ruby_md5}" ]; then
+    if [[ "${myruby_version:-}" != "${ruby_md5}" || ${VERSION} -lt ${ruby_rebuild_version} ]]; then
         echo "Compiling a new version of internal ruby..."
         # Purge the oldversion
         rm -rf myruby
         mkdir myruby
+
+        # Clean the logs.
+        rm -f "${log_dir}"/myruby-*.log
 
         cd src
 
@@ -79,16 +83,25 @@ rubsub_install_myruby() {
         make install \
             > "${log_dir}/myruby-make.log" 2>&1
 
-        # Install some handy gems
-        ${rubsub_dir}/myruby/bin/gem install nokogiri rspec ZenTest diff-lcs \
-            > "${log_dir}/myruby-gem.log" 2>&1
-
         # Write a version
         echo "${ruby_md5}" > "${rubsub_dir}/myruby/.version"
 
     else
         echo "Reusing the previous version of internal ruby..."
     fi
+
+    # Install some handy gems
+    for gem in nokogiri open4 rspec ZenTest diff-lcs; do
+        if [ ! -r "${rubsub_dir}/myruby/.gem-${gem}" ]; then
+            echo "Installing gem ${gem}..."
+            ${rubsub_dir}/myruby/bin/gem install ${gem} >> "${log_dir}/myruby-gem-${gem}.log" 2>&1
+            touch "${rubsub_dir}/myruby/.gem-${gem}"
+        fi
+    done
+
+    # Re-install our libs.
+    rm -rf "${rubsub_dir}/myruby/lib/ruby/vendor_ruby"
+    cp -r  "${rubsub_dir}/src/${rubsub_src}/lib" "${rubsub_dir}/myruby/lib/ruby/vendor_ruby"
 
     # Reset directory
     cd "${rubsub_dir}"
@@ -129,12 +142,11 @@ rubsub_install_rubsub() {
         chmod a+x "${bin}"
     done
 
-    # Install our libs.
-    rm -rf myruby/lib/ruby/vendor_ruby
-    cp -r src/"${rubsub_src}"/lib myruby/lib/ruby/vendor_ruby
-
     # Save the version for update checks.
     cp src/"${rubsub_src}"/VERSION VERSION
+
+    # We'll need this later.
+    VERSION=$(cat VERSION)
 }
 
 # Setup the rubsub directory.
@@ -154,11 +166,11 @@ fi
 # Verify that the tarball downloaded correctly.
 rubsub_verify
 
-# Compile and install mini-ruby
-rubsub_install_myruby
-
 # Fetch and install the latest rubsub code.
 rubsub_install_rubsub
+
+# Compile and install mini-ruby
+rubsub_install_myruby
 
 echo "...done!"
 
