@@ -51,6 +51,7 @@ begin
     when 'info'     then session.info_cmd
     when 'reset'    then session.reset_cmd
     when 'update'   then session.update_cmd
+    when 'upgrade'  then session.upgrade_cmd
     when 'system'   then session.set_ruby_cmd 'system'
     else                 session.set_ruby_cmd ARGV[0]
     end

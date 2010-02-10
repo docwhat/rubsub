@@ -71,6 +71,7 @@ module RubSub
       else
         version = 'none'
       end
+      puts "RubSub version: #{RubSub::VERSION}"
       puts "Current ruby version: #{version}"
     end
 
@@ -161,6 +162,21 @@ EOF
     # update_cmd -- Updates various cached information.
     def update_cmd
       get_ruby_versions false
+    end
+
+    # upgrade_cmd -- Upgrades rubsub.
+    def upgrade_cmd
+      latest_version = fetch_page("http://github.com/docwhat/rubsub/raw/stable/VERSION").to_i
+      if RubSub::VERSION > latest_version
+        puts "Development versions of RubSub should be upgraded by running "
+        puts " './rubsub-install.sh' from your source checkout."
+      elsif RubSub::VERSION < latest_version
+        puts "Upgrading RubSub..."
+        puts "Fetch latest rubsub-install.sh, and exec() it."
+        raise "Not Done"
+      else # RubSub::VERSION == latest_version
+        puts "You are up-to-date."
+      end
     end
 
   end # End class Session
