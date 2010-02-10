@@ -12,7 +12,7 @@ ruby_ext=".tar.gz"
 
 ruby_url="http://ftp.ruby-lang.org/pub/ruby/1.9/ruby-1.9.1-p378${ruby_ext}"
 ruby_md5="9fc5941bda150ac0a33b299e1e53654c"
-ruby_rebuild_version=6
+ruby_rebuild_version=10
 
 ruby_base="$(basename ${ruby_url} ${ruby_ext})"
 log_dir="${rubsub_dir}/log"

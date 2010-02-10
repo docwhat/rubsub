@@ -1,44 +1,67 @@
 =RUBSUB=
 
+RubSub is a way to manage multiple versions of Ruby.  It is designed
+to work in a shell independent way.
+
 This is based on the concept of RVM, but is designed to run entirely
-as ruby.
+as ruby, using no shell-functions.
 
-RVM: Information on RVM is available at http://rvm.beginrescueend.com/
-Thanks to Wayne E. Seguin for helping out.
-
-WARNING: This is still alpha code; Don't expect anything to work!  Use
-RVM if you need something to actually work. :-)
+While this isn't finished, it *does* work. W00T!
 
 ==Quickstart==
 
 curl -q http://github.com/docwhat/rubsub/raw/stable/rubsub-install.sh | bash
 
-(yup, it's that simple)
+Then follow the simple instructions.
 
-==Todo==
- * gemset support
- * add other rubies (jruby, macruby, ree)
+Some simple commands:
+# rubsub info        # => returns some info.
+# rubsub install 1.9 # => installs latest ruby-1.9 version.
+# rubsub upgrade     # => upgrades rubsub
 
-==Solutions==
+==Similar Products==
 
-===A Reliable Ruby===
+* Why would I use RubSub instead of RVM?
 
-We will download and compile miniruby.  This will give us a static, simple ruby
-with a lot of features.
+RVM uses lots of shell functions.  This makes it brittle and hard to
+contribute to.  In addition, RubSub has been designed from the
+beginning to be easily upgradable.
 
-Implemented in rubsub-install.sh
+==Developing==
 
-===per-shell status===
+Do you want to help develop RubSub? Or maybe just play with the latest
+greatest version?
 
-Use a "session-key" to control the rubsub configuration.
+# git clone git://github.com/docwhat/rubsub.git
+# cd rubsub
+# ./rubsub-install.sh
 
-I have two thoughts:
-  # Use $SHELL-$$ -- This is not guaranteed unique, especially given infinite time.
-  # Require that your shell run "eval rubsub --start-session" which creates an environment
-    with a read-only session id.
+If you make changes, you'll need to re-run rubsub-install.sh to get
+your code running.
 
-===Getting the code===
+==Unit Tests==
 
-Currently, all that is implemented a local install version.  It works
-only via the environment variable "LOCAL_INSTALL=yes".
+RubSub has unittests, you can run them from the checkout by using
+spec:
+
+# rubsub internal
+# spec spec
+
+Alternatively, you can use autospec:
+
+# autospec
+
+==Future Goals==
+
+ * Painless upgrading of ruby versions – Gems from previous verions
+   will be installed into the new version.
+ * Stand-alone mode – Designed for use with ruby/rails deployments.
+ * Support for macruby, jruby and others.
+
+==Credits==
+
+ * Written by Christian Höltje – http://docwhat.org/
+  * The original concept for this was Wayne E. Seguin's
+     RVM: http://rvm.beginrescueend.com/
+ * Wayne E. Seguin has been helpful, as always.
 
