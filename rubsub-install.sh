@@ -19,10 +19,12 @@ log_dir="${rubsub_dir}/log"
 tarball="archive/${ruby_base}${ruby_ext}"
 
 # Is this to be installed from a local copy?
-if [ "$(basename $0)" = 'rubsub-install.sh' ]; then
+if [[ "$(basename $0)" = 'rubsub-install.sh' ]]; then
     basedir="$(dirname $0)"
-    if [ -r "${basedir}/README" -a "$(head -n1 ${basedir}/README)" = '=RUBSUB=' ]; then
-        LOCAL_INSTALL=yes
+    if [[ -r "${basedir}/README" ]]; then
+        if [[ "$(head -n1 ${basedir}/README)" = '=RUBSUB=' ]]; then
+            LOCAL_INSTALL=yes
+        fi
     fi
 fi
 
@@ -56,7 +58,7 @@ rubsub_verify() {
 }
 
 rubsub_install_myruby() {
-    if [ -r "${rubsub_dir}/myruby/.version" ]; then
+    if [[ -r "${rubsub_dir}/myruby/.version" ]]; then
         myruby_version="$(cat ${rubsub_dir}/myruby/.version)"
     fi
     if [[ "${myruby_version:-}" != "${ruby_md5}" || ${VERSION} -lt ${ruby_rebuild_version} ]]; then
@@ -92,7 +94,7 @@ rubsub_install_myruby() {
 
     # Install some handy gems
     for gem in nokogiri open4 rspec ZenTest diff-lcs; do
-        if [ ! -r "${rubsub_dir}/myruby/.gem-${gem}" ]; then
+        if [[ ! -r "${rubsub_dir}/myruby/.gem-${gem}" ]]; then
             echo "Installing gem ${gem}..."
             ${rubsub_dir}/myruby/bin/gem install ${gem} >> "${log_dir}/myruby-gem-${gem}.log" 2>&1
             touch "${rubsub_dir}/myruby/.gem-${gem}"
@@ -108,7 +110,7 @@ rubsub_install_myruby() {
 }
 
 rubsub_install_rubsub() {
-    if [ "${LOCAL_INSTALL:-no}" = "yes" ]; then
+    if [[ "${LOCAL_INSTALL:-no}" = "yes" ]]; then
         echo "Getting your local rubsub..."
         # This is an install for testing and debugging.
         rubsub_src="rubsub-local"
