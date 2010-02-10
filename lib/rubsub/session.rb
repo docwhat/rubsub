@@ -178,7 +178,7 @@ EOF
         File.open(tmpfile, 'w') do |f|
           f.write fetch_page("http://github.com/docwhat/rubsub/raw/stable/rubsub-install.sh")
         end
-        exec tmpfile
+        exec "bash", tmpfile
       else # RubSub::VERSION == latest_version
         puts "You are up-to-date."
       end
