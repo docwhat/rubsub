@@ -3,6 +3,7 @@ require 'rubsub/utils'
 require 'rubsub/ruby_version'
 require 'net/http'
 require 'fileutils'
+require 'tmpdir'
 
 module RubSub
 
@@ -172,8 +173,12 @@ EOF
         puts " './rubsub-install.sh' from your source checkout."
       elsif RubSub::VERSION < latest_version
         puts "Upgrading RubSub..."
-        puts "Fetch latest rubsub-install.sh, and exec() it."
-        raise "Not Done"
+        tmpdir = Dir.mktmpdir 'rubsub'
+        tmpfile = File.join(tmpdir, 'rubsub-install.sh')
+        File.open(tmpfile, 'w') do |f|
+          f.write fetch_page("http://github.com/docwhat/rubsub/raw/stable/rubsub-install.sh")
+        end
+        exec tmpfile
       else # RubSub::VERSION == latest_version
         puts "You are up-to-date."
       end
