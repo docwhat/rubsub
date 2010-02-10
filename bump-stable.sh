@@ -43,6 +43,8 @@ git tag "stable-${newver}"
 git checkout stable
 git merge master
 git checkout master
+git push "${remote}" master
+git push "${remote}" stable
 git push --tags
 
 # EOF
