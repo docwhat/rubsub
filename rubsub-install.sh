@@ -132,6 +132,9 @@ rubsub_install_rubsub() {
     # Install our libs.
     rm -rf myruby/lib/ruby/vendor_ruby
     cp -r src/"${rubsub_src}"/lib myruby/lib/ruby/vendor_ruby
+
+    # Save the version for update checks.
+    cp src/"${rubsub_src}"/VERSION VERSION
 }
 
 # Setup the rubsub directory.
