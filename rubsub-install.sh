@@ -174,14 +174,18 @@ rubsub_install_myruby
 
 echo "...done!"
 
-if [[ -z "${RUBSUB_SESSION:-}" && ! -d "${rubsub_dir}/sessions/${RUBSUB_SESSION}" ]]; then
+if [[ -z "${RUBSUB_SESSION:-}" || ! -d "${rubsub_dir}/sessions/${RUBSUB_SESSION}" ]]; then
 cat <<EOF
 
 To use RubSub, you need your session set up.
 
-Add the following line to your shell's startup script (or manually invoke it):
+To do this, you should "eval" the rubsub-session command.
 
-if [[ -s ~/.rubsub/bin/rubsub-session ]] ; then eval `~/.rubsub/bin/rubsub-session`; fi
+An example for bourne shells would be:
+
+if [[ -s \$HOME/.rubsub/bin/rubsub-session ]] ; then eval \`\$HOME/.rubsub/bin/rubsub-session\`; fi
+
+Place this command in your shell's startup script.
 
 EOF
 fi
