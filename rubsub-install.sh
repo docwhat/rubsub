@@ -44,7 +44,7 @@ rubsub_verify() {
     echo "Checking the md5sum..."
 
     set +e
-    echo "${ruby_md5}  ${tarball}" | md5sum --check --quiet
+    echo "${ruby_md5}  ${tarball}" | md5sum --check --status
     result=$?
     set -e
 
