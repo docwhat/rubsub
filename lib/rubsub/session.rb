@@ -148,8 +148,10 @@ EOF
       version = makeVersion version
       return if version.is_a? MyRubyVersion
       if not File.exists? version.tarball_path
-          puts "Downloading #{rubyver}...."
+          puts "Downloading #{version}...."
           tarball = version.fetch
+      else
+        tarball = version.tarball_path
       end
       unpack_dir = File.join(RubSub::SRC_DIR,    version.to_s)
       final_dir  = File.join(RubSub::RUBIES_DIR, version.to_s)
@@ -160,12 +162,12 @@ EOF
         FileUtils.rm_rf unpack_dir
         FileUtils.rm_rf final_dir
 
-        puts "Unpacking #{rubyver}...."
+        puts "Unpacking #{version}...."
         RubSub.unpack tarball, RubSub::SRC_DIR
 
-        puts "Compiling #{rubyver}...."
+        puts "Compiling #{version}...."
         RubSub.compile unpack_dir
-        puts "Finished compiling #{rubyver}!"
+        puts "Finished compiling #{version}!"
       end
     end
 
