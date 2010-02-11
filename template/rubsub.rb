@@ -44,6 +44,8 @@ end
 begin
   if ARGV.length == 0
     session.info_cmd :short
+  elsif ARGV[0] == 'set' and ARGV[1] == 'default' and ARGV.length == 3
+    session.set_default_cmd ARGV[2]
   else
     case ARGV[0]
     when 'install'  then session.install_ruby_cmd ARGV[1]

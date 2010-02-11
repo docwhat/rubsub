@@ -42,6 +42,7 @@ module RubSub
       :configure => nil,
       :cflags    => nil,
       :ldflags   => nil,
+      :makeflags => nil,
     }
     archflags = nil
     if RUBY_PLATFORM =~ /-darwin10/
@@ -83,6 +84,10 @@ module RubSub
           flags[:ldflags] = "-Wl,-syslibroot #{dir} #{archflags}"
         end
       end # Intel
+
+      flags[:makeflags] = "-j #{sysctl['hw.ncpu']}" if sysctl['hw.ncpu'].to_i > 2
+
+      return flags
     end # Darwin
 
     return flags
@@ -91,7 +96,6 @@ module RubSub
   # compile -- Compiles a ruby
   def compile dir
     rubyver = File.basename(dir)
-    puts "Compiling #{rubyver}...."
     log "compile-#{rubyver}", "Starting compile...", true
     old_cwd = Dir.pwd
     begin
@@ -105,7 +109,6 @@ module RubSub
     ensure
       Dir.chdir old_cwd
     end
-    puts "Finished compiling #{rubyver}!"
   end
 
   # log -- Send a log a message to a file.
@@ -137,7 +140,7 @@ module RubSub
 
   # get_ruby_versions -- Checks the website for current versions.
   def get_ruby_versions used_cached=true
-    cache_path = File.join(DB_DIR, 'ruby_versions')
+    cache_path = File.join(DB_DIR, 'ruby_versions.yml')
     if used_cached and File.exists? cache_path
       return File.open(cache_path) { |inf| YAML::load(inf) }
     else
@@ -155,6 +158,37 @@ module RubSub
       File.open(cache_path, 'w') { |out| YAML.dump(found, out) }
       return found
     end
+  end
+
+  # load_config -- Loads the configuration file.
+  def load_config
+    config_path = File.join(RubSub::DIR, 'db', 'session.yml')
+    if File.exists? config_path
+      return File.open(config_path) { |f| YAML::load(f) }
+    else
+      return {}
+    end
+  end
+
+  # save_config -- Saves the configuration file.
+  def save_config config
+    config_path = File.join(RubSub::DIR, 'db', 'session.yml')
+    File.open(config_path, 'w') { |f| YAML.dump(config, f) }
+  end
+
+  # set_default -- Sets the default ruby version.
+  def set_default version
+    raise ArgumentError unless version.is_a? RubyVersion
+    config = load_config
+    config[:default] = version
+    save_config config
+  end
+
+  # get_default -- Gets the default ruby version.
+  def get_default
+    config = load_config
+    d = config[:default]
+    return d.nil? ? :system : d
   end
 
 end

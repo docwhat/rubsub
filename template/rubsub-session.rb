@@ -97,7 +97,7 @@ PATH='#{path.join ':'}'; export PATH;
 EOF
   puts "echo $$ > #{File.join session.dir, 'shell.pid'};"
   if options[:shell] == :zsh
-    puts 'rubdub() { command rubdub "$@" && rehash; };'
+    puts 'rubsub() { command rubsub "$@" && rehash; };'
     puts 'gem()    { command gem "$@" && rehash; };'
   end
   puts "rubsub reset;"

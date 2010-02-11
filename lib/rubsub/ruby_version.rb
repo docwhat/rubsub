@@ -29,7 +29,7 @@ module RubSub
       return string
     elsif string.is_a? String
       if string == 'default'
-        string = makeVersion '1.8'
+        return get_default
       elsif ['internal','myruby'].include? string
         return MyRubyVersion.new
       else

@@ -16,7 +16,6 @@ module RubSub
       @sid = ENV[RubSub::SESSION_VARIABLE]
       @sid = nil unless not @sid.nil? and File.exists? bin_dir
 
-
       if @sid.nil?
         if :new == type
           # Generate a new session id.
@@ -76,30 +75,45 @@ module RubSub
       puts "Current ruby version: #{version}"
     end
 
-    def set_ruby_cmd version
+    # set_default_cmd -- Sets the default ruby. Not necessarily a session command.
+    def set_default_cmd version
       v = findVersion version
-      ruby_dir = v.path
+      set_default v
+      puts "The default is now #{v}."
+    end
+
+    def set_ruby_cmd version
+      if version == "system"
+        v = :system
+      else
+        v = findVersion version
+      end
+
       reset_cmd v
 
       # Set up the current link
       path = File.join(dir, 'current')
       File.unlink path if File.exists? path or File.symlink? path
-      File.symlink ruby_dir, path
+      File.symlink v.path, path unless v == :system
 
       puts "Using #{v}"
     end
 
+    # reset_cmd -- Resets the symlinks based on version.
     def reset_cmd version=nil
       if version.nil?
-        current = File.join(dir, 'current')
-        return set_ruby_cmd 'default' unless File.exists? current
-        version = makeVersion(File.basename(File.readlink(current)))
-      else
+        # Try to get the version from the symlink.
+        current = File.join(RubSub::SESSION_DIR, 'current')
+        if File.exists? current
+          version = makeVersion(File.basename(File.readlink(current)))
+        else
+          version = get_default
+        end
+      elsif version != :system
         version = makeVersion version
       end
-      ruby_dir = version.path
 
-      raise NoSuchRubyError, version, caller unless File.directory? ruby_dir
+      raise NoSuchRubyError, version, caller unless version == :system or File.directory? version.path
 
       # Remove old symlinks
       Dir.entries(bin_dir).find_all {|i| not i.starts_with? '.'}.each do |f|
@@ -107,30 +121,36 @@ module RubSub
         File.unlink path if File.exists? path or File.symlink? path
       end
 
-      Dir.entries(File.join(ruby_dir, 'bin')).find_all {|i| not i.starts_with? '.'}.each do |fname|
-        if not version.is_a? MyRubyVersion
-          # We need a special shell script to control variables.
-          File.open(File.join(bin_dir, fname), 'w') do |fh|
-            fh.write <<EOF
+
+      unless version == :system
+        Dir.entries(File.join(version.path, 'bin')).find_all {|i| not i.starts_with? '.'}.each do |fname|
+          if not version.is_a? MyRubyVersion
+            # We need a special shell script to control variables.
+            File.open(File.join(bin_dir, fname), 'w') do |fh|
+              fh.write <<EOF
 #!/bin/sh
 
-#{File.join(ruby_dir, 'bin', fname)} "$@"
+#{File.join(version.path, 'bin', fname)} "$@"
 EOF
 
-            fh.write "#{File.join(RubSub::BIN_DIR, 'rubsub')} reset\n" if ['gem'].include? fname
+              fh.write "#{File.join(RubSub::BIN_DIR, 'rubsub')} reset\n" if ['gem'].include? fname
+            end
+            File.chmod 0755, File.join(bin_dir, fname)
+          else
+            binary = File.join(version.path, 'bin', fname)
+            File.symlink binary, File.join(bin_dir, fname)
           end
-          File.chmod 0755, File.join(bin_dir, fname)
-        else
-          binary = File.join(ruby_dir, 'bin', fname)
-          File.symlink binary, File.join(bin_dir, fname)
         end
-      end
+      end # unless system
     end
 
     def install_ruby_cmd version, force=false
       version = makeVersion version
       return if version.is_a? MyRubyVersion
-      tarball = version.fetch
+      if not File.exists? version.tarball_path
+          puts "Downloading #{rubyver}...."
+          tarball = version.fetch
+      end
       unpack_dir = File.join(RubSub::SRC_DIR,    version.to_s)
       final_dir  = File.join(RubSub::RUBIES_DIR, version.to_s)
 
@@ -140,24 +160,17 @@ EOF
         FileUtils.rm_rf unpack_dir
         FileUtils.rm_rf final_dir
 
+        puts "Unpacking #{rubyver}...."
         RubSub.unpack tarball, RubSub::SRC_DIR
 
+        puts "Compiling #{rubyver}...."
         RubSub.compile unpack_dir
+        puts "Finished compiling #{rubyver}!"
       end
     end
 
     def remove_ruby_cmd version
       raise 'Not Implemented'
-    end
-
-    # fetch_ruby -- Fetch the requested version of ruby.
-    def fetch_ruby_cmd version
-      version = makeVersion version
-      if not File.exists? version.tarball_path
-        url = version.tarball_url
-        raise "Not Implemented -- fetch #{version.to_s} -- #{url}"
-      end
-      return version.tarball_path
     end
 
     # update_cmd -- Updates various cached information.

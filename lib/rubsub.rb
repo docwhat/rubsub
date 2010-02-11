@@ -12,4 +12,8 @@ require 'rubsub/config'
 # Install functions into root namespace
 include RubSub
 
+$quiet = false
+$verbose = false
+$debug = false
+
 # EOF
