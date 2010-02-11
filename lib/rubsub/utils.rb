@@ -13,7 +13,7 @@ module RubSub
 
   # unpack -- Unpacks a tarball.
   def unpack src, dst
-    raise "No such tarball: #{src}" unless File.exists? src
+    raise "No such tarball: #{src}"   unless File.exists? src
     raise "No such directory: #{dst}" unless File.exists? dst
 
     src = File.expand_path src
@@ -129,8 +129,12 @@ module RubSub
       f.write "CMD: #{cmd}\n"
       status = Open4::popen4(cmd) do |pid, stdin, stdout, stderr|
         stdin.close
-        f.write stdout.gets
-        f.write stderr.gets
+        while (line = stdout.gets)
+          f.write line
+        end
+        while (line = stderr.gets)
+          f.write line
+        end
       end
       f.write "Exited with: #{status}\n"
       f.write "-" * 60; f.write "\n"
