@@ -20,7 +20,7 @@ tarball="archive/${ruby_base}${ruby_ext}"
 
 # Get the current version, needed for upgrading.
 if [[ -r "${rubsub_dir}/VERSION" ]]; then
-    VERSION=$(cat VERSION)
+    VERSION=$(cat "${rubsub_dir}/VERSION")
 else
     VERSION=0
 fi
