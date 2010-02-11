@@ -22,6 +22,11 @@ optparse = OptionParser.new do|opts|
     puts opts
     exit
   end
+
+  options[:quiet] = false
+  opts.on('-q', '--quiet', 'Be very quiet') do
+    options[:quiet] = true
+  end
 end
 
 # Parse the command-line. Remember there are two forms
@@ -33,7 +38,14 @@ optparse.parse!
 
 session = RubSub::Session.new
 
-$VERBOSE = options[:verbose]
+$verbose = options[:verbose]
+$quiet   = options[:quiet]
+
+if $quiet and $verbose
+  puts "Uhmm... quiet *and* verbose? How do I do that?"
+  exit 1
+end
+
 
 def problem message
   puts "** Error **"

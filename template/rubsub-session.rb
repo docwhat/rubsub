@@ -99,8 +99,8 @@ EOF
   if options[:shell] == :zsh
     puts 'rubsub() { command rubsub "$@" && rehash; };'
     puts 'gem()    { command gem "$@" && rehash; };'
+    puts 'rehash;'
   end
-  puts "rubsub reset;"
 end
 
 # EOF

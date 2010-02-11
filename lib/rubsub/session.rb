@@ -14,25 +14,27 @@ module RubSub
     # initialize -- Pass in :new to allow a new session to be created.
     def initialize type = :old
       @sid = ENV[RubSub::SESSION_VARIABLE]
-      @sid = nil unless not @sid.nil? and File.exists? bin_dir
 
-      if @sid.nil?
-        if :new == type
-          # Generate a new session id.
-          while @sid.nil?
-            tmp = ''
-            1.upto(rand(16)) { |i| tmp << SESSION_CHARS[rand(SESSION_CHARS.size-1)] }
-            @sid = tmp unless File.exists? File.join(RubSub::SESSION_DIR, tmp)
-          end
-
-          # Create the session directory.
-          Dir.mkdir dir
-          Dir.mkdir bin_dir
-        else
-          raise "You must run rubsub-session first"
+      if @sid.nil? and :new == type
+        # Generate a new session id.
+        while @sid.nil?
+          tmp = ''
+          1.upto(rand(16)) { |i| tmp << SESSION_CHARS[rand(SESSION_CHARS.size-1)] }
+          @sid = tmp unless File.exists? File.join(RubSub::SESSION_DIR, tmp)
         end
       end
+
+      raise "You must run rubsub-session first" if @sid.nil?
+
+      unless File.directory? dir
+        # Create the session directory.
+        Dir.mkdir dir
+        Dir.mkdir bin_dir
+        # Reset it.
+        reset_cmd
+      end
     end
+
 
     # dir -- The session directory.
     def dir
