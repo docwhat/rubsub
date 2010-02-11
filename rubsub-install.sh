@@ -18,6 +18,13 @@ ruby_base="$(basename ${ruby_url} ${ruby_ext})"
 log_dir="${rubsub_dir}/log"
 tarball="archive/${ruby_base}${ruby_ext}"
 
+# Get the current version, needed for upgrading.
+if [[ -r "${rubsub_dir}/VERSION" ]]; then
+    VERSION=$(cat VERSION)
+else
+    VERSION=0
+fi
+
 # Is this to be installed from a local copy?
 if [[ "$(basename $0)" = 'rubsub-install.sh' ]]; then
     basedir="$(dirname $0)"
@@ -146,9 +153,6 @@ rubsub_install_rubsub() {
 
     # Save the version for update checks.
     cp src/"${rubsub_src}"/VERSION VERSION
-
-    # We'll need this later.
-    VERSION=$(cat VERSION)
 }
 
 # Setup the rubsub directory.
