@@ -23,9 +23,9 @@ module RubSub
       if File.exists? filename
         File.open(filename, "r:utf-8") do |f|
           f.each_line do |line|
-            if line.match /^[a-z][^#:]*:/
+            if line.match(/^[a-z][^#:]*:/)
               # Pull out the key and value.
-              k,v = line.strip.split /:\s*/, 2
+              k,v = line.strip.split(/:\s*/, 2)
               k = k.strip.to_sym
               v = v.strip
 

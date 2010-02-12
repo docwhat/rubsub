@@ -66,7 +66,7 @@ module RubSub
       string = string.to_s
 
       # Figure out the interpreter.
-      if string.match /^[0-9]/
+      if string.match(/^[0-9]/)
         @interpreter = 'ruby'
       else
         tmp = string.split('-',2)
@@ -104,7 +104,7 @@ module RubSub
 
     # complete? -- Returns true if it is complete
     def complete?
-      not (@major.nil? or @minor.nil? or @patch.nil?)
+      not(@major.nil? or @minor.nil? or @patch.nil?)
     end
 
     def guess!
