@@ -70,6 +70,8 @@ begin
     else                 session.set_ruby_cmd ARGV[0]
     end
   end
+rescue RubSub::InvalidRubyStringError => e
+  problem "#{e}"
 rescue RubSub::NoSuchRubyError => e
   problem <<EOF
 #{e.version} isn't installed.

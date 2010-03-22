@@ -3,7 +3,11 @@
 set -eu
 # ftp://ftp.ruby-lang.org/pub/ruby/1.$rubsub_major_version/$rubsub_ruby_package_file.$rubsub_archive_extension
 start_dir="$(pwd -P)"
-rubsub_dir="${HOME}/.rubsub"
+if [[ -n "${RUBSUB_DIR:-}" && -d "$(dirname ${RUBSUB_DIR})" ]]; then
+    rubsub_dir="${RUBSUB_DIR}"
+else
+    rubsub_dir="${HOME}/.rubsub"
+fi
 ruby_ext=".tar.gz"
 
 # Ruby 1.8.7
@@ -157,10 +161,10 @@ rubsub_install_rubsub() {
 
 # Setup the rubsub directory.
 [[ -d "${rubsub_dir}" ]] || mkdir "${rubsub_dir}"
-cd "${HOME}/.rubsub"
+cd "${rubsub_dir}"
 
 # These directories can be re-used.
-for dir in archive src log config db; do
+for dir in archive src log config db sessions; do
     [[ -d ${dir} ]] || mkdir ${dir}
 done
 
@@ -189,7 +193,7 @@ To do this, you should "eval" the rubsub-session command.
 
 An example for bourne shells would be:
 
-if [[ -s \$HOME/.rubsub/bin/rubsub-session ]] ; then eval \`\$HOME/.rubsub/bin/rubsub-session\`; fi
+if [[ -s ${RUBSUB_DIR}/bin/rubsub-session ]] ; then eval \`${RUBSUB_DIR}/bin/rubsub-session\`; fi
 
 Place this command in your shell's startup script.
 

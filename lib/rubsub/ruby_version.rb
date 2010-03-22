@@ -71,13 +71,13 @@ module RubSub
       else
         tmp = string.split('-',2)
         @interpreter = tmp[0]
-        raise "Invalid string '#{string}'" if tmp[1].nil?
+        raise InvalidRubyStringError, "Unable to understand '#{string}'", caller if tmp[1].nil?
         string = tmp[1]
       end
 
       parts = string.split('-')
       if parts.length > 2
-        raise "Invalid version #{string}"
+        raise InvalidRubyStringError, "Unable to understand the version in '#{string}'"
       end
 
       @version = @major = @minor = @patch = nil
@@ -88,7 +88,7 @@ module RubSub
       when 1 then @version = ver_maj_min[0]
       when 2 then @version, @major = ver_maj_min
       when 3 then @version, @major, @minor = ver_maj_min
-      else raise "Invalid version #{string}"
+      else raise InvalidRubyStringError, "Too many version parts in '#{string}'", caller
       end
 
       # Patch
@@ -97,7 +97,7 @@ module RubSub
         if patch.starts_with? 'p'
           @patch = patch.sub(/^p/, '').to_i
         else
-          raise "Invalid patch #{string}"
+          raise InvalidRubyStringError, "I don't understand the patch version in '#{string}'", caller
         end
       end
     end # intialize

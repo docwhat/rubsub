@@ -14,8 +14,10 @@ require 'rubsub'
 describe RubSub::RubyVersion do
 
   it "should pass a sunny day test" do
-    (RubSub::makeVersion 'ruby-1.8.7-p123').to_s.should == 'ruby-1.8.7-p123'
-    (RubSub::makeVersion 'ruby-1.9.1-p1').to_s.should == 'ruby-1.9.1-p1'
+    ['ruby-1.8.7-p123', 'ruby-1.9.1-p1'].each do |s|
+      rv = RubSub::makeVersion s
+      rv.to_s.should == s
+    end
   end
 
   it "should properly compare patch levels" do
