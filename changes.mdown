@@ -1,0 +1,7 @@
+
+# TODO
+* Rubies that don't have rubygems installed should automagically install rubygems.
+
+## Backlog
+
+### Future

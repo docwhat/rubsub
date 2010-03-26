@@ -105,7 +105,7 @@ module RubSub
     def reset_cmd version=nil
       if version.nil?
         # Try to get the version from the symlink.
-        current = File.join(RubSub::SESSION_DIR, 'current')
+        current = File.join(dir, 'current')
         if File.exists? current
           version = makeVersion(File.basename(File.readlink(current)))
         else
