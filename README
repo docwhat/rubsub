@@ -10,7 +10,7 @@ While this isn't finished, it *does* work. W00T!
 
 ==Quickstart==
 
-curl -q http://github.com/docwhat/rubsub/raw/stable/rubsub-install.sh | bash
+curl -q http://github.com/docwhat/rubsub/raw/stable/rubsub-install.bash | bash
 
 Then follow the simple instructions.
 
@@ -34,9 +34,9 @@ greatest version?
 
 # git clone git://github.com/docwhat/rubsub.git
 # cd rubsub
-# ./rubsub-install.sh
+# ./rubsub-install.bash
 
-If you make changes, you'll need to re-run rubsub-install.sh to get
+If you make changes, you'll need to re-run rubsub-install.bash to get
 your code running.
 
 ==Unit Tests==
