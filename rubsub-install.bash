@@ -56,14 +56,16 @@ rubsub_fetch() {
 
 rubsub_verify() {
     echo "Checking the md5sum..."
+    local md5
 
-    set +e
-    echo "${ruby_md5}  ${tarball}" | md5sum --check --status
-    result=$?
-    set -e
+    if [[ -x "/usr/bin/openssl" ]]; then
+        md5=$(/usr/bin/openssl md5 "${tarball}" | cut -d ' ' -f 2)
+    else
+        md5=$(md5sum "${tarball}" | cut -d ' ' -f 1)
+    fi
 
-    if [[ ${result} -ne 0 ]]; then
-        echo "Failed download: md5sum doesn't match."
+    if [[ "${md5}" != "${ruby_md5}"  ]]; then
+        echo "Failed download: md5 checksums don't match."
         exit 1
     fi
 }
