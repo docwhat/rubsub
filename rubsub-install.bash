@@ -69,6 +69,7 @@ rubsub_verify() {
 }
 
 rubsub_install_myruby() {
+    local ec=1
     if [[ -r "${rubsub_dir}/myruby/.version" ]]; then
         myruby_version="$(cat ${rubsub_dir}/myruby/.version)"
     fi
@@ -86,15 +87,33 @@ rubsub_install_myruby() {
         rm -rf "${ruby_base}"
         gzip -dc ../${tarball} | tar xf -
 
-        # Compile rubsub
+        # Compile rubsub's ruby.
         cd "${ruby_base}"
         ./configure \
             --prefix="${rubsub_dir}/myruby" \
             > "${log_dir}/myruby-configure.log" 2>&1
         make all \
             > "${log_dir}/myruby-make.log" 2>&1
+
+        # Install the ruby.
         make install \
             > "${log_dir}/myruby-make.log" 2>&1
+
+        # Verify it has everything we need.
+        local libs="zlib openssl"
+        echo "Verifying ruby has required libs: ${libs}"
+        for lib in ${libs}; do
+            set +e
+            "${rubsub_dir}/myruby/bin/ruby" -e "require '${lib}'"
+            ec=$?
+            set -e
+            if [[ "${ec}" != '0' ]]; then
+                echo "Ruby seems to have failed to compile correctly."
+                echo "Please make sure you have the ${lib} development files installed."
+                exit $ec
+            fi
+        done
+
 
         # Write a version
         echo "${ruby_md5}" > "${rubsub_dir}/myruby/.version"
@@ -107,7 +126,14 @@ rubsub_install_myruby() {
     for gem in nokogiri open4 rspec ZenTest diff-lcs; do
         if [[ ! -r "${rubsub_dir}/myruby/.gem-${gem}" ]]; then
             echo "Installing gem ${gem}..."
+            set +e
             ${rubsub_dir}/myruby/bin/gem install ${gem} >> "${log_dir}/myruby-gem-${gem}.log" 2>&1
+            ec=$?
+            if [[ "${ec}" != '0' ]]; then
+                echo "Failed installing ${gem}...See ${log_dir}/myruby-gem-${gem}.log for more information."
+                exit ${ec}
+            fi
+            set -e
             touch "${rubsub_dir}/myruby/.gem-${gem}"
         fi
     done
@@ -193,7 +219,7 @@ To do this, you should "eval" the rubsub-session command.
 
 An example for bourne shells would be:
 
-if [[ -s ${RUBSUB_DIR}/bin/rubsub-session ]] ; then eval \`${RUBSUB_DIR}/bin/rubsub-session\`; fi
+if [[ -s ${rubsub_dir}/bin/rubsub-session ]] ; then eval \`${rubsub_dir}/bin/rubsub-session\`; fi
 
 Place this command in your shell's startup script.
 
