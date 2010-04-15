@@ -39,7 +39,7 @@ if [[ "$(basename $0)" = 'rubsub-install.sh' ]]; then
     fi
 fi
 
-rubsub_fetch() {
+function rubsub_fetch {
     echo "Fetching ${ruby_url}..."
     cd archive
 
@@ -47,14 +47,14 @@ rubsub_fetch() {
     curl -D/dev/null -O -L -C - "${ruby_url}" \
         > "${log_dir}/fetch.log" 2>&1
     # Extra checking could be done here with $?
-    # See rubsub_verify() for an example.
+    # See rubsub_verify for an example.
     set -e
 
     # Reset directory
     cd "${rubsub_dir}"
 }
 
-rubsub_verify() {
+function rubsub_verify {
     echo "Checking the md5sum..."
     local md5
 
@@ -70,7 +70,7 @@ rubsub_verify() {
     fi
 }
 
-rubsub_install_myruby() {
+function rubsub_install_myruby {
     local ec=1
     if [[ -r "${rubsub_dir}/myruby/.version" ]]; then
         myruby_version="$(cat ${rubsub_dir}/myruby/.version)"
@@ -102,17 +102,13 @@ rubsub_install_myruby() {
             > "${log_dir}/myruby-make.log" 2>&1
 
         # Verify it has everything we need.
-        local libs="zlib openssl"
+        local libs="zlib openssl readline iconv"
         echo "Verifying ruby has required libs: ${libs}"
         for lib in ${libs}; do
-            set +e
-            "${rubsub_dir}/myruby/bin/ruby" -e "require '${lib}'"
-            ec=$?
-            set -e
-            if [[ "${ec}" != '0' ]]; then
+            if ! "${rubsub_dir}/myruby/bin/ruby" -e "require '${lib}'"; then
                 echo "Ruby seems to have failed to compile correctly."
-                echo "Please make sure you have the ${lib} development files installed."
-                exit $ec
+                echo "Please make sure you have the '${lib}' development files installed."
+                exit 11
             fi
         done
 
@@ -140,15 +136,11 @@ rubsub_install_myruby() {
         fi
     done
 
-    # Re-install our libs.
-    rm -rf "${rubsub_dir}/myruby/lib/ruby/vendor_ruby"
-    cp -r  "${rubsub_dir}/src/${rubsub_src}/lib" "${rubsub_dir}/myruby/lib/ruby/vendor_ruby"
-
     # Reset directory
     cd "${rubsub_dir}"
 }
 
-rubsub_install_rubsub() {
+function rubsub_fetch_rubsub {
     if [[ "${LOCAL_INSTALL:-no}" = "yes" ]]; then
         echo "Getting your local rubsub..."
         # This is an install for testing and debugging.
@@ -167,9 +159,14 @@ rubsub_install_rubsub() {
         rubsub_src="$(tar tf ${rubsub_dir}/archive/rubsub-latest.tgz | head -n1)"
         tar xf "${rubsub_dir}/archive/rubsub-latest.tgz"
 
-        # Reset directory
-        cd "${rubsub_dir}"
     fi
+
+    # Reset directory
+    cd "${rubsub_dir}"
+}
+
+function rubsub_install_rubsub {
+    echo "Installing rubsub library..."
 
     # Install the contents of bin.
     rm -rf bin
@@ -183,8 +180,15 @@ rubsub_install_rubsub() {
         chmod a+x "${bin}"
     done
 
+    # Re-install our libs.
+    rm -rf "${rubsub_dir}/myruby/lib/ruby/vendor_ruby"
+    cp -r  "${rubsub_dir}/src/${rubsub_src}/lib" "${rubsub_dir}/myruby/lib/ruby/vendor_ruby"
+
     # Save the version for update checks.
     cp src/"${rubsub_src}"/VERSION VERSION
+
+    # Reset directory
+    cd "${rubsub_dir}"
 }
 
 # Setup the rubsub directory.
@@ -204,11 +208,14 @@ fi
 # Verify that the tarball downloaded correctly.
 rubsub_verify
 
-# Fetch and install the latest rubsub code.
-rubsub_install_rubsub
+# Fetch the latest rubsub code.
+rubsub_fetch_rubsub
 
 # Compile and install mini-ruby
 rubsub_install_myruby
+
+# Install rubsub into myruby.
+rubsub_install_rubsub
 
 echo "...done!"
 
@@ -226,6 +233,8 @@ if [[ -s ${rubsub_dir}/bin/rubsub-session ]] ; then eval \`${rubsub_dir}/bin/rub
 Place this command in your shell's startup script.
 
 EOF
+else
+    "${rubsub_dir}/bin/rubsub" reset
 fi
 
 # EOF
