@@ -1,6 +1,8 @@
 
 # TODO
 * Rubies that don't have rubygems installed should automagically install rubygems.
+* Clean up the rubsub command line.  Needs a 'help'.
+* Move session cmd methods to a rubsub/commands directory with one file per command.
 
 ## Backlog
 
