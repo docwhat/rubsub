@@ -10,10 +10,6 @@ else
 fi
 ruby_ext=".tar.gz"
 
-# Ruby 1.8.7
-#ruby_url="http://ftp.ruby-lang.org/pub/ruby/1.8/ruby-1.8.7-p248${ruby_ext}"
-#ruby_md5="60a65374689ac8b90be54ca9c61c48e3"
-
 ruby_url="http://ftp.ruby-lang.org/pub/ruby/1.9/ruby-1.9.1-p378${ruby_ext}"
 ruby_md5="9fc5941bda150ac0a33b299e1e53654c"
 ruby_rebuild_version=10
@@ -30,7 +26,7 @@ else
 fi
 
 # Is this to be installed from a local copy?
-if [[ "$(basename $0)" = 'rubsub-install.sh' ]]; then
+if [[ "$(basename $0)" = 'rubsub-install.bash' ]]; then
     basedir="$(dirname $0)"
     if [[ -r "${basedir}/README" ]]; then
         if [[ "$(head -n1 ${basedir}/README)" = '=RUBSUB=' ]]; then
